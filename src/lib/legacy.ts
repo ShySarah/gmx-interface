@@ -1353,8 +1353,9 @@ export function getProcessedData(
 }
 
 export function getPageTitle(data) {
-  const title = t`Decentralized Perpetual Exchange | GMX`;
-  return `${data} | ${title}`;
+  const title = t`Formula Finance`;
+  // return `${data} | ${title}`;
+  return `${title}`;
 }
 
 export function isHashZero(value) {

@@ -37,6 +37,10 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      .Exchange-swap-input{
+        text-align: right;
+        padding-right: 0;
+      }
     }
 
     .Exchange-swap-max {
@@ -53,7 +57,7 @@
     .PositionEditor-token-symbol {
       display: flex;
       align-items: center;
-      margin-left: 1rem;
+      margin-right: 1rem;
     }
 
     &-top {
@@ -89,5 +93,30 @@
     &:hover {
       background: rgba(180, 187, 255, 0.1);
     }
+  }
+}
+.dayNum{
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  .day{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: Montserrat;
+    font-size: 12px;
+    font-weight: 400;
+    color: #5A5B5D;
+    width: 141px;
+    height: 98px;
+    border-radius: 8px;
+    padding-top: 30px;
+    background: linear-gradient(90deg, rgba(30, 34, 61, 0.9) 0%, rgba(38, 43, 71, 0.9) 100%);
+    div:first-child{
+      margin-bottom: 5px;
+    }
+  }
+  .day:hover ,.active{
+    background: rgb(56, 61, 94);
   }
 }
