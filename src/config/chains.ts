@@ -13,10 +13,12 @@ export const BSС_TESTNET = 97;
 export const ETH_MAINNET = 1;
 export const AVALANCHE = 43114;
 export const AVALANCHE_FUJI = 43113;
-export const ARBITRUM = 42161;
+export const ARBITRUM = 810181;
 export const ARBITRUM_GOERLI = 421613;
 export const FEES_HIGH_BPS = 50;
 export const DEFAULT_ALLOWED_SLIPPAGE_BPS = 30;
+export const NOVA = 810180;
+export const NOVA_SEPOLIA = 810183;
 
 // TODO take it from web3
 export const DEFAULT_CHAIN_ID = ARBITRUM;
@@ -25,27 +27,32 @@ export const CHAIN_ID = DEFAULT_CHAIN_ID;
 export const SUPPORTED_CHAIN_IDS = [ARBITRUM, AVALANCHE];
 
 if (isDevelopment()) {
-  SUPPORTED_CHAIN_IDS.push(AVALANCHE_FUJI, ARBITRUM_GOERLI);
+  SUPPORTED_CHAIN_IDS.push();
 }
 
 export const IS_NETWORK_DISABLED = {
   [ARBITRUM]: false,
   [AVALANCHE]: false,
   [BSС_MAINNET]: false,
+  [NOVA]: false,
+  [NOVA_SEPOLIA]: false,
 };
 
 export const CHAIN_NAMES_MAP = {
   [BSС_MAINNET]: "BSC",
   [BSС_TESTNET]: "BSC Testnet",
   [ARBITRUM_GOERLI]: "Arbitrum Goerli",
-  [ARBITRUM]: "Arbitrum",
+  [ARBITRUM]: "zkLink Nova Sepolia Testnet",
   [AVALANCHE]: "Avalanche",
   [AVALANCHE_FUJI]: "Avalanche Fuji",
+  [NOVA]: "zkLink Nova",
+  [NOVA_SEPOLIA]: "zkLink Nova Sepolia Testnet",
 };
 
 export const GAS_PRICE_ADJUSTMENT_MAP = {
   [ARBITRUM]: "0",
   [AVALANCHE]: "3000000000", // 3 gwei
+  [NOVA]: "0",
 };
 
 export const MAX_GAS_PRICE_MAP = {
@@ -56,12 +63,16 @@ export const HIGH_EXECUTION_FEES_MAP = {
   [ARBITRUM]: 5, // 5 USD
   [AVALANCHE]: 5, // 5 USD
   [AVALANCHE_FUJI]: 5, // 5 USD
+  [NOVA]: 5, // 5 USD
+  [NOVA_SEPOLIA]: 5, // 5 USD
 };
 
 export const EXCESSIVE_EXECUTION_FEES_MAP = {
   [ARBITRUM]: 10, // 10 USD
   [AVALANCHE]: 10, // 10 USD
   [AVALANCHE_FUJI]: 10, // 10 USD
+  [NOVA]: 10, // 10 USD
+  [NOVA_SEPOLIA]: 10, // 10 USD
 };
 
 export const EXECUTION_FEE_MULTIPLIER_MAP = {
@@ -73,12 +84,16 @@ export const EXECUTION_FEE_MULTIPLIER_MAP = {
   // multiplier for Avalanche is just the average gas usage
   [AVALANCHE]: 700000,
   [AVALANCHE_FUJI]: 700000,
+  [NOVA]: 700000,
+  [NOVA_SEPOLIA]: 700000,
 };
 
 export const NETWORK_EXECUTION_TO_CREATE_FEE_FACTOR = {
   [ARBITRUM]: BigNumber.from(10).pow(29).mul(5),
   [AVALANCHE]: BigNumber.from(10).pow(29).mul(35),
   [AVALANCHE_FUJI]: BigNumber.from(10).pow(29).mul(2),
+  [NOVA]: BigNumber.from(10).pow(29).mul(5),
+  [NOVA_SEPOLIA]: BigNumber.from(10).pow(29).mul(5),
 } as const;
 
 export const EXECUTION_FEE_CONFIG_V2: {
@@ -100,6 +115,14 @@ export const EXECUTION_FEE_CONFIG_V2: {
     defaultBufferBps: 1000, // 10%
   },
   [ARBITRUM_GOERLI]: {
+    shouldUseMaxPriorityFeePerGas: false,
+    defaultBufferBps: 1000, // 10%
+  },
+  [NOVA]: {
+    shouldUseMaxPriorityFeePerGas: false,
+    defaultBufferBps: 1000, // 10%
+  },
+  [NOVA_SEPOLIA]: {
     shouldUseMaxPriorityFeePerGas: false,
     defaultBufferBps: 1000, // 10%
   },
@@ -177,6 +200,33 @@ const constants = {
     // contract requires that execution fee be strictly greater than instead of gte
     DECREASE_ORDER_EXECUTION_GAS_FEE: parseEther("0.0100001"),
   },
+  [NOVA]: {
+    nativeTokenSymbol: "ETH",
+    wrappedTokenSymbol: "WETH",
+    defaultCollateralSymbol: "USDC",
+    defaultFlagOrdersEnabled: false,
+    positionReaderPropsLength: 9,
+    v2: true,
+
+    SWAP_ORDER_EXECUTION_GAS_FEE: parseEther("0.0003"),
+    INCREASE_ORDER_EXECUTION_GAS_FEE: parseEther("0.0003"),
+    // contract requires that execution fee be strictly greater than instead of gte
+    DECREASE_ORDER_EXECUTION_GAS_FEE: parseEther("0.000300001"),
+  },
+
+  [NOVA_SEPOLIA]: {
+    nativeTokenSymbol: "ETH",
+    wrappedTokenSymbol: "WETH",
+    defaultCollateralSymbol: "USDC.e",
+    defaultFlagOrdersEnabled: false,
+    positionReaderPropsLength: 9,
+    v2: true,
+
+    SWAP_ORDER_EXECUTION_GAS_FEE: parseEther("0.0003"),
+    INCREASE_ORDER_EXECUTION_GAS_FEE: parseEther("0.0003"),
+    // contract requires that execution fee be strictly greater than instead of gte
+    DECREASE_ORDER_EXECUTION_GAS_FEE: parseEther("0.000300001"),
+  },
 };
 
 const ALCHEMY_WHITELISTED_DOMAINS = ["gmx.io", "app.gmx.io"];
@@ -199,7 +249,7 @@ export const RPC_PROVIDERS = {
     "https://bsc-dataseed4.binance.org",
   ],
   [BSС_TESTNET]: ["https://data-seed-prebsc-1-s1.binance.org:8545/"],
-  [ARBITRUM]: ["https://arb1.arbitrum.io/rpc"],
+  [ARBITRUM]: ["https://sepolia.rpc.zklink.io"],
   [ARBITRUM_GOERLI]: [
     "https://goerli-rollup.arbitrum.io/rpc",
     // "https://endpoints.omniatech.io/v1/arbitrum/goerli/public",
@@ -212,10 +262,13 @@ export const RPC_PROVIDERS = {
     // "https://ava-testnet.public.blastapi.io/v1/avax/fuji/public",
     // "https://rpc.ankr.com/avalanche_fuji",
   ],
+  [NOVA]: ["https://rpc.zklink.io"],
+  [NOVA_SEPOLIA]: ["https://sepolia.rpc.zklink.io"],
 };
 
 export const FALLBACK_PROVIDERS = {
-  [ARBITRUM]: ENV_ARBITRUM_RPC_URLS ? JSON.parse(ENV_ARBITRUM_RPC_URLS) : [getAlchemyHttpUrl()],
+  // [ARBITRUM]: ENV_ARBITRUM_RPC_URLS ? JSON.parse(ENV_ARBITRUM_RPC_URLS) : [getAlchemyHttpUrl()],
+  [ARBITRUM]: ["https://sepolia.rpc.zklink.io"],
   [AVALANCHE]: ENV_AVALANCHE_RPC_URLS
     ? JSON.parse(ENV_AVALANCHE_RPC_URLS)
     : ["https://avax-mainnet.gateway.pokt.network/v1/lb/626f37766c499d003aada23b"],
@@ -225,6 +278,8 @@ export const FALLBACK_PROVIDERS = {
     "https://ava-testnet.public.blastapi.io/ext/bc/C/rpc",
   ],
   [ARBITRUM_GOERLI]: ["https://arb-goerli.g.alchemy.com/v2/cZfd99JyN42V9Clbs_gOvA3GSBZH1-1j"],
+  [NOVA]: ["https://rpc.zklink.io"],
+  [NOVA_SEPOLIA]: ["https://sepolia.rpc.zklink.io"],
 };
 
 export const NETWORK_METADATA: { [chainId: number]: NetworkMetadata } = {
@@ -294,6 +349,28 @@ export const NETWORK_METADATA: { [chainId: number]: NetworkMetadata } = {
     rpcUrls: RPC_PROVIDERS[AVALANCHE_FUJI],
     blockExplorerUrls: [getExplorerUrl(AVALANCHE_FUJI)],
   },
+  [NOVA]: {
+    chainId: "0x" + NOVA.toString(16),
+    chainName: "zkLink Nova",
+    nativeCurrency: {
+      name: "ETH",
+      symbol: "ETH",
+      decimals: 18,
+    },
+    rpcUrls: RPC_PROVIDERS[NOVA],
+    blockExplorerUrls: [getExplorerUrl(NOVA)],
+  },
+  [NOVA_SEPOLIA]: {
+    chainId: "0x" + NOVA_SEPOLIA.toString(16),
+    chainName: "zkLink Nova Sepolia Testnet",
+    nativeCurrency: {
+      name: "ETH",
+      symbol: "ETH",
+      decimals: 18,
+    },
+    rpcUrls: RPC_PROVIDERS[NOVA_SEPOLIA],
+    blockExplorerUrls: ["https://sepolia.explorer.zklink.io"],
+  },
 };
 
 export const getConstant = (chainId: number, key: string) => {
@@ -346,11 +423,16 @@ export function getExplorerUrl(chainId) {
   } else if (chainId === ARBITRUM_GOERLI) {
     return "https://goerli.arbiscan.io/";
   } else if (chainId === ARBITRUM) {
-    return "https://arbiscan.io/";
+    // return "https://arbiscan.io/";
+    return "https://sepolia.explorer.zklink.io/";
   } else if (chainId === AVALANCHE) {
     return "https://snowtrace.io/";
   } else if (chainId === AVALANCHE_FUJI) {
     return "https://testnet.snowtrace.io/";
+  } else if (chainId === NOVA) {
+    return "https://explorer.zklink.io/";
+  } else if (chainId === NOVA_SEPOLIA) {
+    return "https://sepolia.explorer.zklink.io/";
   }
   return "https://etherscan.io/";
 }

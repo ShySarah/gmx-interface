@@ -82,25 +82,9 @@ export default function BuyInputSection(props: Props) {
   return (
     <div>
       <div className="Exchange-swap-section buy-input" onClick={handleBoxClick}>
-        <div className="buy-input-top-row">
-          <div data-label="left" className="text-gray">
-            {topLeftLabel}
-            {topLeftValue && `${INPUT_LABEL_SEPARATOR} ${topLeftValue}`}
-          </div>
-          <div
-            data-label="right"
-            className={cx("align-right", { clickable: onClickTopRightLabel })}
-            onClick={onClickTopRightLabel}
-          >
-            <span className="text-gray">{topRightLabel}</span>
-            {topRightValue && (
-              <span className="Exchange-swap-label">
-                {topRightLabel ? INPUT_LABEL_SEPARATOR : ""}&nbsp;{topRightValue}
-              </span>
-            )}
-          </div>
-        </div>
         <div className="Exchange-swap-section-bottom">
+          <div className="PositionEditor-token-symbol">{children}</div>
+
           <div className="Exchange-swap-input-container">
             {!staticInput && (
               <NumberInput
@@ -120,7 +104,24 @@ export default function BuyInputSection(props: Props) {
               </button>
             )}
           </div>
-          <div className="PositionEditor-token-symbol">{children}</div>
+        </div>
+        <div className="buy-input-top-row">
+          <div
+            data-label="right"
+            className={cx("align-right", { clickable: onClickTopRightLabel })}
+            onClick={onClickTopRightLabel}
+          >
+            <span className="text-gray">{topRightLabel}</span>
+            {topRightValue && (
+              <span className="Exchange-swap-label">
+                {topRightLabel ? INPUT_LABEL_SEPARATOR : ""}&nbsp;{topRightValue}
+              </span>
+            )}
+          </div>
+          <div data-label="left" className="text-gray">
+            {topLeftLabel}
+            {topLeftValue && `${INPUT_LABEL_SEPARATOR} ${topLeftValue}`}
+          </div>
         </div>
       </div>
       {showPercentSelector && isPercentSelectorVisible && onPercentChange && (

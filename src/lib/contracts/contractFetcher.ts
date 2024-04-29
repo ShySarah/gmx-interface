@@ -51,7 +51,7 @@ export const contractFetcher =
         .then((result) => resolve(result))
         .catch((e) => {
           // eslint-disable-next-line no-console
-          console.error("fallback fetcher error", id, contractInfo.contractName, method, e);
+          console.error("fallback fetcher error111111", id, "合约" + contractInfo.contractName, method, e);
           reject(e);
         });
     };

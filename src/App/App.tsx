@@ -280,7 +280,7 @@ function FullApp() {
                 <Stake />
               </Route>
               <Route exact path="/buy">
-                <Buy />
+                <BuyGlp />
               </Route>
               <Route exact path="/pools">
                 {getIsSyntheticsSupported(chainId) ? (

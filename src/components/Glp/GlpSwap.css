@@ -52,6 +52,23 @@
 .GlpSwap-box .Exchange-swap-option-tabs {
   margin: 1.5rem 0;
 }
+.App-card-stats{
+  display: flex;
+  align-items: center;
+  margin-bottom: 2.4rem;
+}
+.App-card-stats .App-card-title { 
+  margin-bottom: 0;
+}
+.App-card-content-flex {
+  display: flex;
+  gap: 2rem;
+}
+.App-card-content-flex .App-card-row {
+  display: flex;
+  gap: 1rem;
+
+}
 
 .App-card-title-mark-icon {
   position: relative;
@@ -86,15 +103,15 @@
 }
 
 .GlpSwap-token-list {
-  border-radius: 4px;
-  background: #16182e;
-  padding: 1.5rem;
   padding-top: 0;
   text-align: left;
 }
 
 .GlpSwap-token-list-content {
   display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-column-gap: 0.8rem;
+  grid-row-gap: 0.8rem;
   padding: 1.5rem;
   padding-top: 0;
   text-align: left;
@@ -117,6 +134,14 @@
   color: #a9a9b0;
   opacity: 1;
 }
+.GlpSwap-box .Tab.block {
+  background: #1E1F24;
+  border-radius: 0.8rem;
+}
+.GlpSwap-box .Tab.block .Tab-option {
+  font-size: 1.6rem;
+  font-weight: 900;
+}
 
 .GlpSwap-cta {
   margin: 0 auto;
@@ -138,10 +163,14 @@
   border-spacing: 0;
   white-space: nowrap;
   font-size: var(--font-base);
+  display: none;
 }
 
 .token-grid {
-  display: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-column-gap: 2.4rem;
+  grid-row-gap: 2.4rem;
 }
 
 .token-table td,
@@ -223,20 +252,22 @@
 
 .AppOrder-ball {
   position: absolute;
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 4rem;
+  height: 4rem;
   left: 50%;
   margin-left: -1.7825rem;
   top: -2.5rem;
   border-radius: 3.1rem;
   cursor: pointer;
   user-select: none;
-  background: var(--primary-btn-bg);
   display: flex;
   justify-content: center;
   align-items: center;
   border: none;
   color: white;
+  border-radius: 12px;
+  border: 6px solid #131313;
+  background: #1E1F24;
 }
 
 .AppOrder-ball:hover {
@@ -249,6 +280,30 @@
 
 .AppOrder-ball:hover .AppOrder-ball-icon {
   opacity: 1;
+}
+.token-grid .App-card-divider {
+  background: none;
+
+}
+.token-grid .App-card:hover{
+  background: url(img/token-bg.png);
+  background-repeat: no-repeat;
+  background-size: cover;
+
+}
+.App-card-options {
+  display: flex;
+  justify-content: end;
+}
+.App-card-options .button.secondary{
+  background: var(--primary-btn-bg);
+  border-radius: 1.2rem;
+}
+.App-card-options .secondary:not([disabled]):hover {
+  background: var(--primary-btn-bg);
+}
+.value-gap{
+  margin: 0 0.2rem;
 }
 
 @media (max-width: 900px) {

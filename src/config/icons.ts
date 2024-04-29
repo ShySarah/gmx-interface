@@ -1,4 +1,4 @@
-import { ARBITRUM, ARBITRUM_GOERLI, AVALANCHE, AVALANCHE_FUJI } from "config/chains";
+import { ARBITRUM, ARBITRUM_GOERLI, AVALANCHE, AVALANCHE_FUJI, NOVA, NOVA_SEPOLIA } from "config/chains";
 import arbitrum from "img/ic_arbitrum_24.svg";
 import avalanche from "img/ic_avalanche_24.svg";
 import avalancheTestnet from "img/ic_avalanche_testnet_24.svg";
@@ -17,12 +17,20 @@ import gmxArbitrum from "img/ic_gmx_arbitrum.svg";
 import gmxAvax from "img/ic_gmx_avax.svg";
 import glpArbitrum from "img/ic_glp_arbitrum.svg";
 import glpAvax from "img/ic_glp_avalanche.svg";
+import glpNova from "img/nova-logo.svg";
 
 const ICONS = {
   [ARBITRUM]: {
-    network: arbitrum,
+    network: glpNova,
     gmx: gmxArbitrum,
-    glp: glpArbitrum,
+    glp: glpNova,
+    esgmx: esGMXArbitrumIcon,
+    gm: gmArbitrum,
+  },
+  [NOVA]: {
+    network: glpNova,
+    gmx: glpNova,
+    glp: glpNova,
     esgmx: esGMXArbitrumIcon,
     gm: gmArbitrum,
   },
@@ -37,6 +45,12 @@ const ICONS = {
     network: arbitrumGoerli,
     gmx: gmxArbitrum,
     glp: glpArbitrum,
+    gm: gmArbitrum,
+  },
+  [NOVA_SEPOLIA]: {
+    network: glpNova,
+    gmx: glpNova,
+    glp: glpNova,
     gm: gmArbitrum,
   },
   [AVALANCHE_FUJI]: {

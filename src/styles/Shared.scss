@@ -54,13 +54,13 @@ input {
   background: #b3b4c2;
 }
 :root {
-  --main-bg-color: #101124;
+  --main-bg-color: #0A0A0A;
   --dark-blue: #17182c;
   --dark-blue-bg: #16182e;
   --dark-blue-accent: #a0a3c4;
-  --primary-btn-bg: #2d42fc;
-  --primary-btn-hover: #4d5ffa;
-  --primary-btn-active: #5264fc;
+  --primary-btn-bg: #5D00FB;
+  --primary-btn-hover: #5D00FB;
+  --primary-btn-active: #5D00FB;
   --dark-blue-hover: #808aff14;
   --dark-blue-border: #ffffff29;
   --dark-blue-active: #818cef33;
@@ -447,7 +447,7 @@ button.btn-link:hover .logout-icon {
   min-height: calc(100vh - 62px);
   display: flex;
   flex-direction: column;
-  padding-bottom: calc(4.65rem + 20rem);
+  padding-bottom: calc(4.65rem + 10rem);
   padding-top: 4.65rem;
 }
 

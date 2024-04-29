@@ -12,10 +12,42 @@ import {
   walletConnectWallet,
 } from "@rainbow-me/rainbowkit/wallets";
 import { isDevelopment } from "config/env";
-import { http } from "viem";
-import { arbitrum, arbitrumGoerli, avalanche, avalancheFuji } from "viem/chains";
+import { http, defineChain } from "viem";
+import { arbitrumGoerli, avalanche, avalancheFuji } from "viem/chains";
 
 import binanceWallet from "./connecters/binanceW3W/binanceWallet";
+export const arbitrum = /*#__PURE__*/ defineChain({
+  id: 810181,
+  name: "zkLink Nova Testnet",
+  network: "nova",
+  nativeCurrency: {
+    decimals: 18,
+    name: "ETH",
+    symbol: "ETH",
+  },
+  rpcUrls: {
+    default: { http: ["https://sepolia.rpc.zklink.io"] },
+    public: { http: ["https://sepolia.rpc.zklink.io"] },
+  },
+  blockExplorers: {
+    etherscan: {
+      name: "Blast Explorer",
+      // url: "https://sepolia.lineascan.build",
+      url: "hhttps://sepolia.explorer.zklink.io",
+    },
+    default: {
+      name: "Blast Explorer",
+      // url: "https://sepolia.lineascan.build",
+      url: "https://sepolia.explorer.zklink.io",
+    },
+  },
+  contracts: {
+    multicall3: {
+      address: "0xcc43208B28B1eC25F000EfC0D2c2aF044715F888 ",
+      blockCreated: 212929,
+    },
+  },
+});
 
 const WALLET_CONNECT_PROJECT_ID = "de24cddbaf2a68f027eae30d9bb5df58";
 const APP_NAME = "GMX";

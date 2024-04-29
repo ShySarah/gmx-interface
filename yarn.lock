@@ -5110,6 +5110,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/echarts@npm:4.9.22":
+  version: 4.9.22
+  resolution: "@types/echarts@npm:4.9.22"
+  dependencies:
+    "@types/zrender": "*"
+  checksum: f33a94c96dc3302751e4c1825e779e08ddd2369f96120cc56ba53a64198d0a021587eccf81465e6ce8689d625ae7e2c946e5787d6376386b29c8ecc58300880e
+  languageName: node
+  linkType: hard
+
 "@types/eslint-scope@npm:^3.7.3":
   version: 3.7.4
   resolution: "@types/eslint-scope@npm:3.7.4"
@@ -5594,6 +5603,13 @@ __metadata:
   dependencies:
     "@types/yargs-parser": "*"
   checksum: 5f3ac4dc4f6e211c1627340160fbe2fd247ceba002190da6cf9155af1798450501d628c9165a183f30a224fc68fa5e700490d740ff4c73e2cdef95bc4e8ba7bf
+  languageName: node
+  linkType: hard
+
+"@types/zrender@npm:*":
+  version: 4.0.6
+  resolution: "@types/zrender@npm:4.0.6"
+  checksum: 07115466bf90d3f4fa86ad47bc5013b7c68371d2cb37e9411af0d8c4511025b56163d29efc36c19b9918e4672ee63c8a175eb50d299d9bcab193b879517d7ac7
   languageName: node
   linkType: hard
 
@@ -9362,6 +9378,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"echarts@npm:5.5.0":
+  version: 5.5.0
+  resolution: "echarts@npm:5.5.0"
+  dependencies:
+    tslib: 2.3.0
+    zrender: 5.5.0
+  checksum: 181600d21bc4ad6a877bac419800501345c4103ae49ef05a4db495c8dde91f0a5f7ff02eb94581190c59518526f7931e8410ce3fe5da1e0f1e60cd1aeec04a52
+  languageName: node
+  linkType: hard
+
 "eciesjs@npm:^0.3.15, eciesjs@npm:^0.3.16":
   version: 0.3.18
   resolution: "eciesjs@npm:0.3.18"
@@ -11192,6 +11218,7 @@ __metadata:
     "@testing-library/jest-dom": 5.16.1
     "@testing-library/react": 11.2.7
     "@testing-library/user-event": 12.8.3
+    "@types/echarts": 4.9.22
     "@types/lodash": 4.14.198
     "@types/node": 18.7.13
     "@types/react": 18.2.64
@@ -11207,6 +11234,7 @@ __metadata:
     classnames: 2.3.1
     crypto-js: 4.2.0
     date-fns: 2.27.0
+    echarts: 5.5.0
     env-cmd: ^10.1.0
     eslint: ^8.41.0
     eslint-config-prettier: 9.0.0
@@ -19776,6 +19804,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tslib@npm:2.3.0":
+  version: 2.3.0
+  resolution: "tslib@npm:2.3.0"
+  checksum: 8869694c26e4a7b56d449662fd54a4f9ba872c889d991202c74462bd99f10e61d5bd63199566c4284c0f742277736292a969642cc7b590f98727a7cae9529122
+  languageName: node
+  linkType: hard
+
 "tslib@npm:2.4.0":
   version: 2.4.0
   resolution: "tslib@npm:2.4.0"
@@ -21383,6 +21418,15 @@ __metadata:
   version: 0.8.15
   resolution: "zen-observable@npm:0.8.15"
   checksum: b7289084bc1fc74a559b7259faa23d3214b14b538a8843d2b001a35e27147833f4107590b1b44bf5bc7f6dfe6f488660d3a3725f268e09b3925b3476153b7821
+  languageName: node
+  linkType: hard
+
+"zrender@npm:5.5.0":
+  version: 5.5.0
+  resolution: "zrender@npm:5.5.0"
+  dependencies:
+    tslib: 2.3.0
+  checksum: 89e4f9e95b586af66ebf5c0504d5f8da73678e18c5b888124943ca81ecea7cff12f23009d64048df91e4dc670e9c51fa66c357834d9347e367f3b5cc02a24d35
   languageName: node
   linkType: hard
 

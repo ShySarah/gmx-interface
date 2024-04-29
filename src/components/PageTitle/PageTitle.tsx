@@ -18,7 +18,7 @@ export default function PageTitle({
   subtitle,
   className,
   isTop = false,
-  showNetworkIcon = true,
+  showNetworkIcon = false,
   afterTitle,
 }: Props) {
   const classNames = cx("Page-title-wrapper", className, { gapTop: !isTop });

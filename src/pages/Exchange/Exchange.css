@@ -712,7 +712,7 @@ table.Position-list .Exchange-list-item-active {
   padding: 1.5rem;
   margin-bottom: 1.05rem;
   border-radius: 0.3rem;
-  background: linear-gradient(90deg, rgba(30, 34, 61, 0.9) 0%, rgba(38, 43, 71, 0.9) 100%);
+  background: #1E1F24;
   outline: 0.05rem solid transparent;
   outline-offset: -0.1rem;
 }
@@ -750,7 +750,7 @@ table.Position-list .Exchange-list-item-active {
 
 .Exchange-swap-section-bottom {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: auto 1fr;
   padding-bottom: 0.31rem;
 }
 
@@ -765,7 +765,7 @@ table.Position-list .Exchange-list-item-active {
   top: 0;
   padding: 0.465rem 0.8rem;
   color: #fff;
-  outline: 1rem solid rgba(33, 37, 64, 1);
+  /* outline: 1rem solid rgba(33, 37, 64, 1); */
   border-radius: 3px;
   z-index: 1;
   cursor: pointer;
@@ -797,7 +797,8 @@ input.Exchange-swap-input {
   max-width: 100%;
   font-size: var(--font-lg);
   width: 100%;
-  padding-right: 2rem;
+  padding: 0 2rem;
+  text-align: right;
 }
 input.Exchange-swap-input.small {
   max-width: 14.725rem;
@@ -805,6 +806,11 @@ input.Exchange-swap-input.small {
 
 .Exchange-swap-button-container {
   padding-top: 0.31rem;
+
+}
+.Exchange-swap-button-container .button {
+  font-size: 1.6rem;
+  font-weight: 900;
 }
 
 .Exchange-swap-button {
