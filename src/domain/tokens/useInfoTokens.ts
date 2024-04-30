@@ -42,13 +42,14 @@ export function useInfoTokens(
   );
 
   const indexPricesUrl = getServerUrl(chainId, "/prices");
-
-  const { data: indexPrices } = useSWR(indexPricesUrl, {
-    // @ts-ignore spread args incorrect type
-    fetcher: (url) => fetch(url).then((res) => res.json()),
-    refreshInterval: 500,
-    refreshWhenHidden: true,
-  });
+  // TODO 
+  const indexPrices = {};
+  // const { data: indexPrices } = useSWR(indexPricesUrl, {
+  //   // @ts-ignore spread args incorrect type
+  //   fetcher: (url) => fetch(url).then((res) => res.json()),
+  //   refreshInterval: 500,
+  //   refreshWhenHidden: true,
+  // });
 
   return {
     infoTokens: getInfoTokens(
