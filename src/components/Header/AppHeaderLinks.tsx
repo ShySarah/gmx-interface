@@ -72,12 +72,12 @@ export function AppHeaderLinks({ small, openSettings, clickCloseIcon, showRedire
         </ExternalLink>
       </div> */}
       {/* {small && !isHomeSite() && ( */}
-        {/* <div className="App-header-link-container"> */}
-          {/* eslint-disable-next-line */}
-          {/* <a href="#" onClick={openSettings}> */}
-            {/* <Trans>Settings</Trans> */}
-          {/* </a> */}
-        {/* </div> */}
+      {/* <div className="App-header-link-container"> */}
+      {/* eslint-disable-next-line */}
+      {/* <a href="#" onClick={openSettings}> */}
+      {/* <Trans>Settings</Trans> */}
+      {/* </a> */}
+      {/* </div> */}
       {/* )} */}
     </div>
   );

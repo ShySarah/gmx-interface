@@ -72,19 +72,17 @@ export function AppHeaderUser({ openSettings, small, disconnectAccountAndCloseSe
         <div className="network-img-box">
           <img className="network-dropdown-icon network-img" src={icon} alt={selectorLabel} />
         </div>
-
         <div className={cx("App-header-trade-link", { "homepage-header": isHomeSite() })}>
           <HeaderLink className="default-btn" to={tradeLink!} showRedirectModal={showRedirectModal}>
             {isHomeSite() ? <Trans>Launch App</Trans> : <Trans>Trade</Trans>}
           </HeaderLink>
         </div>
-
         {showConnectionOptions && openConnectModal ? (
           <>
             <ConnectWalletButton onClick={openConnectModal} imgSrc={connectWalletImg}>
               {small ? <Trans>Connect</Trans> : <Trans>Connect Wallet</Trans>}
             </ConnectWalletButton>
-            {isDevelopment() && (
+            {!isDevelopment() && (
               <NetworkDropdown
                 small={small}
                 networkOptions={NETWORK_OPTIONS}
@@ -104,6 +102,9 @@ export function AppHeaderUser({ openSettings, small, disconnectAccountAndCloseSe
 
   return (
     <div className="App-header-user">
+      <div className="network-img-box">
+        <img className="network-dropdown-icon network-img" src={icon} alt={selectorLabel} />
+      </div>
       <div className={cx("App-header-trade-link")}>
         <HeaderLink className="default-btn" to={tradeLink!} showRedirectModal={showRedirectModal}>
           {isHomeSite() ? <Trans>Launch App</Trans> : <Trans>Trade</Trans>}
@@ -119,12 +120,14 @@ export function AppHeaderUser({ openSettings, small, disconnectAccountAndCloseSe
               disconnectAccountAndCloseSettings={disconnectAccountAndCloseSettings}
             />
           </div>
-          <NetworkDropdown
-            small={small}
-            networkOptions={NETWORK_OPTIONS}
-            selectorLabel={selectorLabel}
-            openSettings={openSettings}
-          />
+          {!isDevelopment() && (
+            <NetworkDropdown
+              small={small}
+              networkOptions={NETWORK_OPTIONS}
+              selectorLabel={selectorLabel}
+              openSettings={openSettings}
+            />
+          )}
         </>
       ) : (
         <LanguagePopupHome />
