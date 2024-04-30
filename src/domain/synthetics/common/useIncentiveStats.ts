@@ -10,15 +10,18 @@ import { RawIncentivesStats, useOracleKeeperFetcher } from "../tokens";
 export default function useIncentiveStats(overrideChainId?: number) {
   const { chainId: defaultChainId } = useChainId();
   const chainId = overrideChainId ?? defaultChainId;
-  const oracleKeeperFetcher = useOracleKeeperFetcher(chainId);
+  //TODO
+  // const oracleKeeperFetcher = useOracleKeeperFetcher(chainId);
+  const oracleKeeperFetcher=null;
 
   return (
     useSWR<RawIncentivesStats | null>(["incentiveStats", chainId], async () => {
       if (!oracleKeeperFetcher) {
         return null;
       }
-      const res = await oracleKeeperFetcher.fetchIncentivesRewards();
-      return res;
+      // const res = await oracleKeeperFetcher.fetchIncentivesRewards();
+      // return res;
+      return null
     }).data ?? null
   );
 }

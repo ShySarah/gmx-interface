@@ -619,12 +619,22 @@ export const TOKENS: { [chainId: number]: Token[] } = {
       name: "Ethereum",
       symbol: "ETH",
       decimals: 18,
-      address: ethers.constants.AddressZero, // ，ethers.constants.AddressZero 0x5bfbF217Fb73474319fC48aD355e79d91E69eedE
+      address: ethers.constants.AddressZero, // ，ethers.constants.AddressZero
       isNative: true,
       isShortable: true,
       imageUrl: "https://assets.coingecko.com/coins/images/279/small/ethereum.png?1595348880",
       coingeckoUrl: "https://www.coingecko.com/en/coins/ethereum",
-      // explorerUrl: "https://explorer.zklink.io/address/0x5bfbF217Fb73474319fC48aD355e79d91E69eedE",
+      isV1Available: true,
+    },
+    {
+      name: "Wrapped Ethereum",
+      symbol: "WETH",
+      decimals: 18,
+      address: "0xd7Da924AB56b87e7C1B1933c84992053FD824eA1",
+      isWrapped: true,
+      baseSymbol: "ETH",
+      imageUrl: "https://assets.coingecko.com/coins/images/2518/thumb/weth.png?1628852295",
+      coingeckoUrl: "https://www.coingecko.com/en/coins/ethereum",
       isV1Available: true,
     },
     {

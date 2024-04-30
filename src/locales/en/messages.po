@@ -1442,7 +1442,7 @@ msgstr "Current {0} shorts"
 #: src/components/Glp/GlpSwap.js
 #: src/components/Glp/GlpSwap.js
 msgid "CurrentTarget"
-msgstr "CurrentTarget"
+msgstr "Current / Target"
 
 #: src/domain/synthetics/orders/utils.tsx
 msgid "Currently, There is a high Swap Price Impact for the Order Swap path."

@@ -31,19 +31,19 @@ export const arbitrum = /*#__PURE__*/ defineChain({
   },
   blockExplorers: {
     etherscan: {
-      name: "Blast Explorer",
+      name: "zkLink Nova Sepolia Testnet  Explorer",
       // url: "https://sepolia.lineascan.build",
       url: "hhttps://sepolia.explorer.zklink.io",
     },
     default: {
-      name: "Blast Explorer",
+      name: "zkLink Nova Sepolia Testnet Explorer",
       // url: "https://sepolia.lineascan.build",
       url: "https://sepolia.explorer.zklink.io",
     },
   },
   contracts: {
     multicall3: {
-      address: "0xcc43208B28B1eC25F000EfC0D2c2aF044715F888 ",
+      address: "0xcc43208B28B1eC25F000EfC0D2c2aF044715F888",
       blockCreated: 212929,
     },
   },
