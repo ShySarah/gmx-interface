@@ -82,7 +82,7 @@ export function AppHeaderUser({ openSettings, small, disconnectAccountAndCloseSe
             <ConnectWalletButton onClick={openConnectModal} imgSrc={connectWalletImg}>
               {small ? <Trans>Connect</Trans> : <Trans>Connect Wallet</Trans>}
             </ConnectWalletButton>
-            {!isDevelopment() && (
+            {isDevelopment() && (
               <NetworkDropdown
                 small={small}
                 networkOptions={NETWORK_OPTIONS}
@@ -120,7 +120,7 @@ export function AppHeaderUser({ openSettings, small, disconnectAccountAndCloseSe
               disconnectAccountAndCloseSettings={disconnectAccountAndCloseSettings}
             />
           </div>
-          {!isDevelopment() && (
+          {isDevelopment() && (
             <NetworkDropdown
               small={small}
               networkOptions={NETWORK_OPTIONS}
