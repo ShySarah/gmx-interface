@@ -287,12 +287,13 @@ export default function GlpSwap(props) {
   );
 
   const glpVesterAddress = getContract(chainId, "GlpVester");
-  const { data: reservedAmount } = useSWR(
-    [`GlpSwap:reservedAmount:${active}`, chainId, glpVesterAddress, "pairAmounts", account || PLACEHOLDER_ACCOUNT],
-    {
-      fetcher: contractFetcher(signer, Vester),
-    }
-  );
+  const reservedAmount =0;
+  // const { data: reservedAmount } = useSWR(
+  //   [`GlpSwap:reservedAmount:${active}`, chainId, glpVesterAddress, "pairAmounts", account || PLACEHOLDER_ACCOUNT],
+  //   {
+  //     fetcher: contractFetcher(signer, Vester),
+  //   }
+  // );
 
   // const { gmxPrice } = useGmxPrice(chainId, { arbitrum: chainId === ARBITRUM ? signer : undefined }, active);
 
