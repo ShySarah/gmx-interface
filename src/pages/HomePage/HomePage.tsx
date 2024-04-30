@@ -11,7 +11,10 @@ import leftSec from "img/leftSec.png";
 import rightFir from "img/rightFir.png";
 import rightSec from "img/rightSec.png";
 import logoImg from "img/logo_GMX.svg";
+import structure from "img/structure.png";
+import structure2 from "img/structure2.png";
 import { Link } from "react-router-dom";
+import Footer from "components/Footer/Footer";
 
 function HomePage() {
   return (
@@ -109,6 +112,19 @@ function HomePage() {
           </div>
         </div>
       </div>
+      <div className="product">
+        <div className="contentTitle productTitle">
+          Product Structure
+        </div>
+        <img src={structure} className="structure" />
+      </div>
+      <div className="productSec">
+        <div className="contentTitle productTitle">
+          Product Structure
+        </div>
+        <img src={structure2} className="structure" />
+      </div>
+      <Footer />
     </div>
   );
 }

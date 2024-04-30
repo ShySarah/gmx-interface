@@ -37,7 +37,7 @@ import useSWR from "swr";
 import { getContract } from "config/contracts";
 
 import Button from "components/Button/Button";
-import BuyInputSection from "components/BuyInputSection/BuyInputSection";
+import BuyInputSele from "components/BuyInputSele/BuyInputSele";
 import SEO from "components/Common/SEO";
 import ExternalLink from "components/ExternalLink/ExternalLink";
 import GMXAprTooltip from "components/Stake/GMXAprTooltip";
@@ -185,7 +185,7 @@ function StakeModal(props) {
   return (
     <div className="StakeModal bigModal">
       <Modal isVisible={isVisible} setIsVisible={setIsVisible} label={title}>
-        <BuyInputSection
+        <BuyInputSele
           topLeftLabel={t`Stake`}
           topRightLabel={t`Max`}
           topRightValue={formatAmount(maxAmount, 18, 4, true)}
@@ -209,7 +209,7 @@ function StakeModal(props) {
             />
             {stakingTokenSymbol}
           </div>
-        </BuyInputSection>
+        </BuyInputSele>
 
         <div className="Exchange-swap-button-container">
           <Button variant="primary-action" className="w-full" onClick={onClickPrimary} disabled={!isPrimaryEnabled()}>
@@ -318,7 +318,7 @@ function UnstakeModal(props) {
   return (
     <div className="StakeModal">
       <Modal isVisible={isVisible} setIsVisible={setIsVisible} label={title}>
-        <BuyInputSection
+        <BuyInputSele
           topLeftLabel={t`Unstake`}
           topRightLabel={t`Max`}
           topRightValue={formatAmount(maxAmount, 18, 4, true)}
@@ -336,7 +336,7 @@ function UnstakeModal(props) {
             />
             {unstakingTokenSymbol}
           </div>
-        </BuyInputSection>
+        </BuyInputSele>
         {reservedAmount && reservedAmount.gt(0) && (
           <AlertInfo type="info">
             You have {formatAmount(reservedAmount, 18, 2, true)} tokens reserved for vesting.
@@ -463,7 +463,7 @@ function VesterDepositModal(props) {
     <SEO title={getPageTitle(t`Earn`)}>
       <div className="StakeModal">
         <Modal isVisible={isVisible} setIsVisible={setIsVisible} label={title} className="non-scrollable">
-          <BuyInputSection
+          <BuyInputSele
             topLeftLabel={t`Deposit`}
             topRightLabel={t`Max`}
             topRightValue={formatAmount(maxAmount, 18, 4, true)}
@@ -476,7 +476,7 @@ function VesterDepositModal(props) {
               <img className="mr-xs icon" height="22" src={icons.esgmx} alt="esGMX" />
               esGMX
             </div>
-          </BuyInputSection>
+          </BuyInputSele>
 
           <div className="VesterDepositModal-info-rows">
             <div className="Exchange-info-row">
