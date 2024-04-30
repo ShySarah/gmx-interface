@@ -5,7 +5,7 @@ import "./AllocationChart.scss";
 interface RingChartProps {
   data: { name: string; value: number }[];
 }
-const style = { width: "100%", height: "300px" };
+const style = { width: "100%", height: "250px" };
 
 const RingChart: React.FC<RingChartProps> = ({ data }) => {
   const chartRef = useRef<HTMLDivElement>(null);
