@@ -89,7 +89,7 @@ export default function NetworkDropdown(props) {
     </>
   );
 }
-function NavIcons({ selectorLabel }) {
+export function NavIcons({ selectorLabel }) {
   const { chainId } = useChainId();
   const icon = getIcon(chainId, "network");
 
