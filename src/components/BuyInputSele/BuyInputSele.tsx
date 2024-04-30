@@ -1,4 +1,4 @@
-import "./BuyInputSection.scss";
+import "./BuyInputSele.scss";
 import React, { useRef, ReactNode, ChangeEvent, useState } from "react";
 import cx from "classnames";
 import { Trans } from "@lingui/macro";
@@ -24,7 +24,7 @@ type Props = {
   preventFocusOnLabelClick?: "left" | "right" | "both";
 };
 
-export default function BuyInputSection(props: Props) {
+export default function BuyInputSele(props: Props) {
   const {
     topLeftLabel,
     topLeftValue,
@@ -82,9 +82,9 @@ export default function BuyInputSection(props: Props) {
   return (
     <div>
       <div className="Exchange-swap-section buy-input" onClick={handleBoxClick}>
+
         <div className="Exchange-swap-section-bottom">
           <div className="PositionEditor-token-symbol">{children}</div>
-
           <div className="Exchange-swap-input-container">
             {!staticInput && (
               <NumberInput
@@ -106,24 +106,41 @@ export default function BuyInputSection(props: Props) {
           </div>
         </div>
         <div className="buy-input-top-row">
+          {/* <div data-label="left" className="text-gray">
+            {topLeftLabel}
+            {topLeftValue && `${INPUT_LABEL_SEPARATOR} ${topLeftValue}`}
+          </div> */}
           <div
             data-label="right"
             className={cx("align-right", { clickable: onClickTopRightLabel })}
             onClick={onClickTopRightLabel}
           >
-            <span className="text-gray">{topRightLabel}</span>
+            <span className="text-gray">
+              {/* {topRightLabel} */}
+              Balance:
+              </span>
             {topRightValue && (
               <span className="Exchange-swap-label">
                 {topRightLabel ? INPUT_LABEL_SEPARATOR : ""}&nbsp;{topRightValue}
               </span>
             )}
           </div>
-          <div data-label="left" className="text-gray">
-            {topLeftLabel}
-            {topLeftValue && `${INPUT_LABEL_SEPARATOR} ${topLeftValue}`}
-          </div>
         </div>
       </div>
+        <div className="dayNum">
+          <div className="day active">
+            <div>30 days</div>
+            <div>Multiplier 1x</div>
+          </div>
+          <div className="day">
+            <div>60 days</div>
+            <div>Multiplier 2x</div>
+          </div>
+          <div className="day">
+            <div>90 days</div>
+            <div>Multiplier 3x</div>
+          </div>
+        </div>
       {showPercentSelector && isPercentSelectorVisible && onPercentChange && (
         <ul className="PercentSelector">
           {PERCENTAGE_SUGGESTIONS.map((percentage) => (

@@ -37,7 +37,7 @@ import useSWR from "swr";
 import { getContract } from "config/contracts";
 
 import Button from "components/Button/Button";
-import BuyInputSection from "components/BuyInputSection/BuyInputSection";
+import BuyInputSele from "components/BuyInputSele/BuyInputSele";
 import SEO from "components/Common/SEO";
 import ExternalLink from "components/ExternalLink/ExternalLink";
 import GMXAprTooltip from "components/Stake/GMXAprTooltip";
@@ -183,9 +183,9 @@ function StakeModal(props) {
   };
 
   return (
-    <div className="StakeModal">
+    <div className="StakeModal bigModal">
       <Modal isVisible={isVisible} setIsVisible={setIsVisible} label={title}>
-        <BuyInputSection
+        <BuyInputSele
           topLeftLabel={t`Stake`}
           topRightLabel={t`Max`}
           topRightValue={formatAmount(maxAmount, 18, 4, true)}
@@ -209,11 +209,12 @@ function StakeModal(props) {
             />
             {stakingTokenSymbol}
           </div>
-        </BuyInputSection>
+        </BuyInputSele>
 
         <div className="Exchange-swap-button-container">
           <Button variant="primary-action" className="w-full" onClick={onClickPrimary} disabled={!isPrimaryEnabled()}>
-            {getPrimaryText()}
+            {/* {getPrimaryText()} */}
+            Confirm
           </Button>
         </div>
       </Modal>
@@ -317,7 +318,7 @@ function UnstakeModal(props) {
   return (
     <div className="StakeModal">
       <Modal isVisible={isVisible} setIsVisible={setIsVisible} label={title}>
-        <BuyInputSection
+        <BuyInputSele
           topLeftLabel={t`Unstake`}
           topRightLabel={t`Max`}
           topRightValue={formatAmount(maxAmount, 18, 4, true)}
@@ -335,7 +336,7 @@ function UnstakeModal(props) {
             />
             {unstakingTokenSymbol}
           </div>
-        </BuyInputSection>
+        </BuyInputSele>
         {reservedAmount && reservedAmount.gt(0) && (
           <AlertInfo type="info">
             You have {formatAmount(reservedAmount, 18, 2, true)} tokens reserved for vesting.
@@ -462,7 +463,7 @@ function VesterDepositModal(props) {
     <SEO title={getPageTitle(t`Earn`)}>
       <div className="StakeModal">
         <Modal isVisible={isVisible} setIsVisible={setIsVisible} label={title} className="non-scrollable">
-          <BuyInputSection
+          <BuyInputSele
             topLeftLabel={t`Deposit`}
             topRightLabel={t`Max`}
             topRightValue={formatAmount(maxAmount, 18, 4, true)}
@@ -475,7 +476,7 @@ function VesterDepositModal(props) {
               <img className="mr-xs icon" height="22" src={icons.esgmx} alt="esGMX" />
               esGMX
             </div>
-          </BuyInputSection>
+          </BuyInputSele>
 
           <div className="VesterDepositModal-info-rows">
             <div className="Exchange-info-row">
@@ -1182,7 +1183,6 @@ export default function StakeV2() {
     stakedGlpTrackerAddress,
     feeGlpTrackerAddress,
   ];
-
   const stakedBnGmxSupply = useStakedBnGMXAmount(chainId);
   const { marketsInfoData, tokensData } = useMarketsInfoRequest(chainId);
   const { marketTokensData } = useMarketTokensData(chainId, { isDeposit: false });
@@ -1368,7 +1368,16 @@ export default function StakeV2() {
     setStakingFarmAddress(stakedGmxTrackerAddress);
     setStakeMethodName("stakeGmx");
   };
-
+  const showStakeGmxModals = () => {
+    setIsStakeModalVisible(true);
+    setStakeModalTitle(t`Stake FOM`);
+    setStakeModalMaxAmount(processedData?.gmxBalance);
+    setStakeValue("");
+    setStakingTokenSymbol("GMX");
+    setStakingTokenAddress(gmxAddress);
+    setStakingFarmAddress(stakedGmxTrackerAddress);
+    setStakeMethodName("stakeGmx");
+  };
   const showStakeEsGmxModal = () => {
     setIsStakeModalVisible(true);
     setStakeModalTitle(t`Stake esGMX`);
@@ -1770,12 +1779,10 @@ export default function StakeV2() {
         subtitle={
           <div>
             <Trans>
-              Stake <ExternalLink href="https://docs.gmx.io/docs/tokenomics/gmx-token">GMX</ExternalLink> and buy{" "}
-              <ExternalLink href="https://docs.gmx.io/docs/providing-liquidity/v2">GM</ExternalLink> or{" "}
-              <ExternalLink href="https://docs.gmx.io/docs/providing-liquidity/v1">GLP</ExternalLink> to earn rewards.
+            Earn reward from trading fees and liquidity mining
             </Trans>
             {earnMsg && <div className="Page-description">{earnMsg}</div>}
-            {(incentiveStats?.lp?.isActive || incentiveStats?.trading?.isActive) && (
+            {/* {(incentiveStats?.lp?.isActive || incentiveStats?.trading?.isActive) && (
               <div>
                 <Trans>
                   Liquidity and trading incentives program is live on Arbitrum.{" "}
@@ -1788,11 +1795,11 @@ export default function StakeV2() {
                   .
                 </Trans>
               </div>
-            )}
+            )} */}
           </div>
         }
       />
-      <div className="StakeV2-content">
+      {/* <div className="StakeV2-content">
         <div className="StakeV2-cards">
           <div className="App-card StakeV2-gmx-card">
             <div className="App-card-title">
@@ -2362,9 +2369,97 @@ export default function StakeV2() {
             </div>
           </div>
         </div>
+      </div> */}
+      <div className="App-card App-card-space-between StakeV2-content">
+        <div className="StakeV2-title">FOM Statistics</div>
+        <div className="StakeV2-box">
+          <div className="StakeV2-totalBox">
+            <div className="StakeV2-tit">Total Emissions</div>
+            <div>1,333,213</div>
+          </div>
+          <div className="StakeV2-totalBox">
+            <div className="StakeV2-tit">Total Claimed</div>
+            <div>1,333,213</div>
+          </div>
+          <div className="StakeV2-totalBox">
+            <div className="StakeV2-tit">Current Emisions</div>
+            <div>1,333,213</div>
+          </div>
+          <Button variant="secondary" to="/buy_glp" className="StakeV2-button">
+            <Trans>Buy</Trans>
+          </Button>
+        </div>
       </div>
 
-      {getIsSyntheticsSupported(chainId) && (
+      <div className="App-card App-card-space-between StakeV2-content">
+        <div className="StakeV2-title">Claimable Rewards</div>
+        <div className="StakeV2-box">
+          <div className="StakeV2-claimBox">
+            <div className="StakeV2-claimNum">0.00</div>
+            <div className="StakeV2-claimToken">USDT</div>
+          </div>
+          <div className="StakeV2-claimBox">
+            <div className="StakeV2-claimNum">0.00</div>
+            <div className="StakeV2-claimToken">FOM</div>
+          </div>
+          <Button variant="secondary" to="/buy_glp" className="StakeV2-button">
+            <Trans>Claim All</Trans>
+          </Button>
+        </div>
+      </div>
+
+      <div className="App-card App-card-space-between StakeV2-content">
+        <div className="StakeV2-title">FOM Statistics</div>
+        <div className="StakeV2-box">
+          <div className="StakeV2-fomBox">
+            <div className="StakeV2-tit">APR</div>
+            <div>1,333,213</div>
+          </div>
+          <div className="StakeV2-fomBox">
+            <div className="StakeV2-tit">Stake APR</div>
+            <div>1,333,213</div>
+          </div>
+          <div className="StakeV2-fomBox">
+            <div className="StakeV2-tit">Staked FOM</div>
+            <div>1,333,213</div>
+          </div>
+          <div className="StakeV2-fomBox">
+            <div className="StakeV2-tit">Total Staking Reward</div>
+            <div>1,333,213</div>
+          </div>
+        </div>
+      </div>
+      <div className="App-card App-card-space-between StakeV2-content">
+        <div className="StakeV2-title">My Data</div>
+        <div className="StakeV2-box">
+          <div className="StakeV2-fomBox">
+            <div className="StakeV2-tit">FOM</div>
+            <div>1,333,213</div>
+          </div>
+          <div className="StakeV2-fomBox">
+            <div className="StakeV2-tit">Staked FOM</div>
+            <div>1,333,213</div>
+          </div>
+          <div className="StakeV2-fomBox">
+            <div className="StakeV2-tit">Total Reward</div>
+            <div>1,333,213</div>
+          </div>
+          <div className="StakeV2-fomBox">
+            <div className="StakeV2-tit">Claimable Rewards</div>
+            <div>1,333,213</div>
+          </div>
+        </div>
+      </div>
+      
+      <div className="App-card App-card-space-between StakeV2-content">
+        <div className="StakeV2-box">
+          <div className="StakeV2-stakeTitle">Stake FOM</div>
+          <Button variant="secondary" className="StakeV2-stakeButton"  onClick={() => showStakeGmxModals()}>
+            <Trans>Stake FOM</Trans>
+          </Button>
+        </div>
+      </div>
+      {/* {getIsSyntheticsSupported(chainId) && (
         <div className="StakeV2-section">
           <GmList
             marketsTokensAPRData={marketsTokensAPRData}
@@ -2375,9 +2470,9 @@ export default function StakeV2() {
             shouldScrollToTop
           />
         </div>
-      )}
+      )} */}
 
-      <div>
+      {/* <div>
         <PageTitle
           title={t`Vest`}
           subtitle={
@@ -2691,8 +2786,8 @@ export default function StakeV2() {
             )
           }
         />
-      </div>
-      <UserIncentiveDistributionList />
+      </div> */}
+      {/* <UserIncentiveDistributionList /> */}
       <Footer />
     </div>
   );

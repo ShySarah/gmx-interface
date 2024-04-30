@@ -17,6 +17,9 @@ export default function Footer({ showRedirectModal, redirectPopupTimestamp }: Pr
       <div className={cx("Footer-wrapper", { home: isHome })}>
         <div className="Footer-logo">
           <img src={logoImg} alt="MetaMask" />
+          <div className="deposit">
+          Copyright © AGX, 2024. All rights reserved
+          </div>
         </div>
         <div className="Footer-social-link-block">
           {SOCIAL_LINKS.map((platform) => {
@@ -27,7 +30,7 @@ export default function Footer({ showRedirectModal, redirectPopupTimestamp }: Pr
             );
           })}
         </div>
-        <div className="Footer-links">
+        {/* <div className="Footer-links">
           {getFooterLinks(isHome).map(({ external, label, link, isAppLink }) => {
             if (external) {
               return (
@@ -62,7 +65,7 @@ export default function Footer({ showRedirectModal, redirectPopupTimestamp }: Pr
               </NavLink>
             );
           })}
-        </div>
+        </div> */}
       </div>
     </div>
   );

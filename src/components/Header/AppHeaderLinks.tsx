@@ -56,7 +56,7 @@ export function AppHeaderLinks({ small, openSettings, clickCloseIcon, showRedire
           <Trans>Referrals</Trans>
         </HeaderLink>
       </div>
-      <div className="App-header-link-container">
+      {/* <div className="App-header-link-container">
         <HeaderLink to="/leaderboard" showRedirectModal={showRedirectModal} isActive={isLeaderboardActive}>
           <Trans>Leaderboard</Trans>
         </HeaderLink>
@@ -70,15 +70,15 @@ export function AppHeaderLinks({ small, openSettings, clickCloseIcon, showRedire
         <ExternalLink href="https://docs.gmx.io/">
           <Trans>Docs</Trans>
         </ExternalLink>
-      </div>
-      {small && !isHomeSite() && (
-        <div className="App-header-link-container">
+      </div> */}
+      {/* {small && !isHomeSite() && ( */}
+        {/* <div className="App-header-link-container"> */}
           {/* eslint-disable-next-line */}
-          <a href="#" onClick={openSettings}>
-            <Trans>Settings</Trans>
-          </a>
-        </div>
-      )}
+          {/* <a href="#" onClick={openSettings}> */}
+            {/* <Trans>Settings</Trans> */}
+          {/* </a> */}
+        {/* </div> */}
+      {/* )} */}
     </div>
   );
 }

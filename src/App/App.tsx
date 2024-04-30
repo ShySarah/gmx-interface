@@ -23,6 +23,7 @@ import NftWallet from "pages/NftWallet/NftWallet";
 import OrdersOverview from "pages/OrdersOverview/OrdersOverview";
 import PositionsOverview from "pages/PositionsOverview/PositionsOverview";
 import { PriceImpactRebatesStatsPage } from "pages/PriceImpactRebatesStats/PriceImpactRebatesStats";
+import HomePage from "pages/HomePage/HomePage";
 import Referrals from "pages/Referrals/Referrals";
 import ReferralsTier from "pages/ReferralsTier/ReferralsTier";
 import Stake from "pages/Stake/Stake";
@@ -116,7 +117,6 @@ function FullApp() {
   const { chainId } = useChainId();
   const location = useLocation();
   const history = useHistory();
-
   const hasV1LostFocus = useHasLostFocus({
     timeout: WS_LOST_FOCUS_TIMEOUT,
     whiteListedPages: ["/trade", "/v2"],
@@ -234,11 +234,11 @@ function FullApp() {
     <>
       <div className="App">
         <div className="App-content">
-          <Header
+          { location.pathname !== '/' &&(<Header
             disconnectAccountAndCloseSettings={disconnectAccountAndCloseSettings}
             openSettings={openSettings}
             showRedirectModal={showRedirectModal}
-          />
+          />)}
           {isHome && (
             <Switch>
               <Route exact path="/">
@@ -258,7 +258,8 @@ function FullApp() {
           {!isHome && (
             <Switch>
               <Route exact path="/">
-                <Redirect to="/trade" />
+                {/* <Redirect to="/trade" /> */}
+                <HomePage />
               </Route>
               <Route exact path="/price_impact_rebates_stats">
                 <PriceImpactRebatesStatsPage />

@@ -113,3 +113,90 @@
     padding: 0;
   }
 }
+.StakeV2-content{
+  margin-bottom: 15px;
+}
+.StakeV2-title{
+  font-family: Satoshi;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 21.6px;
+  text-align: left;
+  padding-bottom: 10px;
+  border-bottom: 3px solid #1d202e;
+  margin-bottom: 10px;
+}
+.StakeV2-box{
+  display: flex;
+  position: relative;
+  gap: 15px;
+}
+.StakeV2-totalBox{
+  width: 233px;
+  height: 68px;
+  border-radius: 8px 0px 0px 0px;
+  padding: 12px;
+  background: #1d202e;
+  font-family: Satoshi;
+  font-size: 16px;
+  font-weight: 900;
+  text-align: left;
+}
+.StakeV2-tit{
+  font-family: Satoshi;
+  font-size: 12px;
+  font-weight: 500;
+  color: #5A5B5D;
+  margin-bottom: 10px;
+}
+.StakeV2-button{
+  position: absolute!important;
+  padding: 10px 20px!important;
+  background: #5D00FB!important;
+  text-decoration: none;
+  right: 0px;
+  top: 15px;
+}
+.StakeV2-claimBox{
+  display: flex;
+  font-family: Satoshi;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: left;
+  margin-right: 20%;
+}
+.StakeV2-claimNum{
+  font-size: 48px;
+  font-weight: 700;
+}
+.StakeV2-claimToken{
+  padding-top: 35px;
+  margin-left: 5px;
+}
+.StakeV2-fomBox{
+  width: 200px;
+  height: 68px;
+  border-radius: 8px 0px 0px 0px;
+  padding: 12px;
+  font-family: Satoshi;
+  font-size: 16px;
+  font-weight: 900;
+  text-align: left;
+}
+.StakeV2-stakeTitle{
+  font-family: Satoshi;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: left;
+}
+.StakeV2-stakeButton{
+  position: absolute!important;
+  padding: 10px 20px!important;
+  background: #5D00FB!important;
+  text-decoration: none;
+  right: 0px;
+  top: -2px;
+}
+.bigModal .Modal-content{
+  width: 50rem;
+}
