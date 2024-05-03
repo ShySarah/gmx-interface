@@ -13,6 +13,9 @@ import RewardRouter from "abis/RewardRouter.json";
 import Token from "abis/Token.json";
 import Vault from "abis/Vault.json";
 import Vester from "abis/Vester.json";
+import TimeDistributor from "abis/TimeDistributor.json";
+import YieldTracker from "abis/YieldTracker.json";
+import GLP from "abis/GLP.json";
 
 import { ARBITRUM, AVALANCHE, getConstant } from "config/chains";
 import { useGmxPrice, useTotalGmxStaked, useTotalGmxSupply } from "domain/legacy";
@@ -1146,6 +1149,9 @@ export default function StakeV2() {
   const feeGlpTrackerAddress = getContract(chainId, "FeeGlpTracker");
 
   const glpManagerAddress = getContract(chainId, "GlpManager");
+  
+  const timeDistributorAddress = getContract(chainId, "TimeDistributor");
+  const yieldTrackerAddress = getContract(chainId, "YieldTracker");
 
   const stakedGmxDistributorAddress = getContract(chainId, "StakedGmxDistributor");
   const stakedGlpDistributorAddress = getContract(chainId, "StakedGlpDistributor");
@@ -1153,6 +1159,7 @@ export default function StakeV2() {
   const gmxVesterAddress = getContract(chainId, "GmxVester");
   const glpVesterAddress = getContract(chainId, "GlpVester");
   const affiliateVesterAddress = getContract(chainId, "AffiliateVester");
+  const AGXAddress = getContract(chainId, "AGX");
 
   const excludedEsGmxAccounts = [stakedGmxDistributorAddress, stakedGlpDistributorAddress];
 
@@ -1228,18 +1235,34 @@ export default function StakeV2() {
       fetcher: contractFetcher(signer, Token),
     }
   );
-
+  const { data: AGXBalance } = useSWR(
+    [`GlpSwap:glpBalance:${active}`, chainId, AGXAddress, "balanceOf", account],
+    {
+      fetcher: contractFetcher(signer, GLP),
+    }
+  );
   const { data: aums } = useSWR([`StakeV2:getAums:${active}`, chainId, glpManagerAddress, "getAums"], {
     fetcher: contractFetcher(signer, GlpManager),
   });
 
+  const { data: totalEmissions } = useSWR([`StakeV2:totalEmission:${active}`, chainId, timeDistributorAddress, "totalEmission"], {
+    fetcher: contractFetcher(signer, TimeDistributor),
+  });
+  const { data: totalClaimed } = useSWR([`StakeV2:totalClaim:${active}`, chainId, yieldTrackerAddress, "totalClaim"], {
+    fetcher: contractFetcher(signer, YieldTracker),
+  });
+  const { data: perinterval } = useSWR([`StakeV2:getTokensPerInterval:${active}`, chainId, yieldTrackerAddress, "getTokensPerInterval"], {
+    fetcher: contractFetcher(signer, YieldTracker),
+  });
+  const { data: rewards } = useSWR([`StakeV2:claimable:${active}`, chainId, yieldTrackerAddress, "claimable"], {
+    fetcher: contractFetcher(signer, YieldTracker,[account]),
+  });
   const { data: nativeTokenPrice } = useSWR(
     [`StakeV2:nativeTokenPrice:${active}`, chainId, vaultAddress, "getMinPrice", nativeTokenAddress],
     {
       fetcher: contractFetcher(signer, Vault),
     }
   );
-
   const { data: esGmxSupply } = useSWR(
     [`StakeV2:esGmxSupply:${active}`, chainId, readerAddress, "getTokenSupply", esGmxAddress],
     {
@@ -1279,6 +1302,10 @@ export default function StakeV2() {
     aum = aums[0].add(aums[1]).div(2);
   }
 
+  let perinter;
+  if (perinterval) {
+    perinter = perinterval.mul(24);
+  }
   const { balanceData, supplyData } = useMemo(() => getBalanceAndSupplyData(walletBalances), [walletBalances]);
   const depositBalanceData = useMemo(() => getDepositBalanceData(depositBalances), [depositBalances]);
   const stakingData = useMemo(() => getStakingData(stakingInfo), [stakingInfo]);
@@ -1658,6 +1685,45 @@ export default function StakeV2() {
     [arbitrumGmxStaked, avaxGmxStaked]
   );
 
+  const [isClaiming, setIsClaiming] = useState(false);
+  const isPrimaryEnabled = () => {
+    return !isClaiming;
+  };
+
+  const getPrimaryText = () => {
+    if (isClaiming) {
+      return t`Claiming...`;
+    }
+    return t`Claim All`;
+  };
+  const onClickPrimary = () => {
+    setIsClaiming(true);
+    const contract = new ethers.Contract(AGXAddress, GLP.abi, signer);
+    callContract(
+      chainId,
+      contract,
+      "claim",
+      [
+        account
+      ],
+      {
+        sentMsg: t`Claim submitted.`,
+        failMsg: t`Claim failed.`,
+        successMsg: t`Claim completed!`,
+        setPendingTxns,
+      }
+    )
+      .then(() => {
+      })
+      .finally(() => {
+        setIsClaiming(false);
+      });
+  };
+  
+  // const AGXAddress = getContract(chainId, "AGX");
+  // const contract = new ethers.Contract(AGXAddress, GLP.abi, signer);
+  // const balance = contract.methods.balanceOf(account).call();
+  // console.log(balance)
   return (
     <div className="default-container page-layout">
       <StakeModal
@@ -1772,324 +1838,40 @@ export default function StakeV2() {
         setIsVisible={setIsAffiliateClaimModalVisible}
         totalVesterRewards={vestingData?.affiliateVesterClaimable ?? BN_ZERO}
       />
-
-      <PageTitle
-        isTop
-        title={t`Earn`}
-        subtitle={
-          <div>
-            <Trans>
-            Earn reward from trading fees and liquidity mining
-            </Trans>
-            {earnMsg && <div className="Page-description">{earnMsg}</div>}
-            {/* {(incentiveStats?.lp?.isActive || incentiveStats?.trading?.isActive) && (
-              <div>
-                <Trans>
-                  Liquidity and trading incentives program is live on Arbitrum.{" "}
-                  <ExternalLink
-                    newTab
-                    href="https://gmxio.notion.site/GMX-S-T-I-P-Incentives-Distribution-1a5ab9ca432b4f1798ff8810ce51fec3"
-                  >
-                    Read more
-                  </ExternalLink>
-                  .
-                </Trans>
-              </div>
-            )} */}
-          </div>
-        }
-      />
-      {/* <div className="StakeV2-content">
-        <div className="StakeV2-cards">
-          <div className="App-card StakeV2-gmx-card">
-            <div className="App-card-title">
-              <div className="inline-items-center">
-                <img className="mr-xs" alt="GMX" src={icons.gmx} height={20} />
-                GMX
-              </div>
-            </div>
-            <div className="App-card-divider"></div>
-            <div className="App-card-content">
-              <div className="App-card-row">
-                <div className="label">
-                  <Trans>Price</Trans>
-                </div>
-                <div>
-                  {!gmxPrice && "..."}
-                  {gmxPrice && (
-                    <Tooltip
-                      position="bottom-end"
-                      className="nowrap"
-                      handle={"$" + formatAmount(gmxPrice, USD_DECIMALS, 2, true)}
-                      renderContent={() => (
-                        <>
-                          <StatsTooltipRow
-                            label={t`Price on Avalanche`}
-                            value={formatAmount(gmxPriceFromAvalanche, USD_DECIMALS, 2, true)}
-                          />
-                          <StatsTooltipRow
-                            label={t`Price on Arbitrum`}
-                            value={formatAmount(gmxPriceFromArbitrum, USD_DECIMALS, 2, true)}
-                          />
-                        </>
-                      )}
-                    />
-                  )}
-                </div>
-              </div>
-              <div className="App-card-row">
-                <div className="label">
-                  <Trans>Wallet</Trans>
-                </div>
-                <div>
-                  {formatKeyAmount(processedData, "gmxBalance", 18, 2, true)} GMX ($
-                  {formatKeyAmount(processedData, "gmxBalanceUsd", USD_DECIMALS, 2, true)})
-                </div>
-              </div>
-              <div className="App-card-row">
-                <div className="label">
-                  <Trans>Staked</Trans>
-                </div>
-                <div>
-                  {formatKeyAmount(processedData, "gmxInStakedGmx", 18, 2, true)} GMX ($
-                  {formatKeyAmount(processedData, "gmxInStakedGmxUsd", USD_DECIMALS, 2, true)})
-                </div>
-              </div>
-              <div className="App-card-divider"></div>
-              <div className="App-card-row">
-                <div className="label">
-                  <Trans>Avg. APR</Trans>
-                </div>
-                <div>
-                  <Tooltip
-                    handle={gmxAvgAprText}
-                    position="bottom-end"
-                    renderContent={() => (
-                      <GMXAprTooltip processedData={processedData!} nativeTokenSymbol={nativeTokenSymbol} />
-                    )}
-                  />
-                </div>
-              </div>
-              {active && (
-                <div className="App-card-row">
-                  <div className="label">
-                    <Trans>Your APR</Trans>
-                  </div>
-                  <div>
-                    <Tooltip
-                      handle={`${formatKeyAmount(processedData, "gmxAprTotalWithBoost", 2, 2, true)}%`}
-                      position="bottom-end"
-                      renderContent={() => (
-                        <GMXAprTooltip
-                          processedData={processedData!}
-                          nativeTokenSymbol={nativeTokenSymbol}
-                          recommendStakeGmx={recommendStakeGmx}
-                          isUserConnected={true}
-                        />
-                      )}
-                    />
-                  </div>
-                </div>
-              )}
-              <div className="App-card-row">
-                <div className="label">
-                  <Trans>Rewards</Trans>
-                </div>
-                <div>
-                  <Tooltip
-                    handle={`$${formatKeyAmount(processedData, "totalGmxRewardsUsd", USD_DECIMALS, 2, true)}`}
-                    position="bottom-end"
-                    renderContent={() => {
-                      return (
-                        <>
-                          <StatsTooltipRow
-                            label={`${nativeTokenSymbol} (${wrappedTokenSymbol})`}
-                            value={`${formatKeyAmount(
-                              processedData,
-                              "feeGmxTrackerRewards",
-                              18,
-                              4
-                            )} ($${formatKeyAmount(processedData, "feeGmxTrackerRewardsUsd", USD_DECIMALS, 2, true)})`}
-                            showDollar={false}
-                          />
-                          <StatsTooltipRow
-                            label="Escrowed GMX"
-                            value={`${formatKeyAmount(
-                              processedData,
-                              "stakedGmxTrackerRewards",
-                              18,
-                              4
-                            )} ($${formatKeyAmount(
-                              processedData,
-                              "stakedGmxTrackerRewardsUsd",
-                              USD_DECIMALS,
-                              2,
-                              true
-                            )})`}
-                            showDollar={false}
-                          />
-                        </>
-                      );
-                    }}
-                  />
-                </div>
-              </div>
-              <div className="App-card-row">
-                <div className="label">{renderMultiplierPointsLabel()}</div>
-                <div>{renderMultiplierPointsValue()}</div>
-              </div>
-              <div className="App-card-row">
-                <div className="label">
-                  <Trans>Boost Percentage</Trans>
-                </div>
-                <div>
-                  <Tooltip
-                    handle={`${formatAmount(processedData?.boostBasisPoints, 2, 2, false)}%`}
-                    position="bottom-end"
-                    renderContent={renderBoostPercentageTooltip}
-                  />
-                </div>
-              </div>
-              <div className="App-card-divider"></div>
-              <div className="App-card-row">
-                <div className="label">
-                  <Trans>Total Staked</Trans>
-                </div>
-                <div>
-                  {!totalGmxStaked && "..."}
-                  {totalGmxStaked && (
-                    <Tooltip
-                      position="bottom-end"
-                      className="nowrap"
-                      handle={
-                        formatAmount(totalGmxStaked, 18, 0, true) +
-                        " GMX" +
-                        ` ($${formatAmount(stakedGmxSupplyUsd, USD_DECIMALS, 0, true)})`
-                      }
-                      renderContent={() => (
-                        <ChainsStatsTooltipRow
-                          showDollar={false}
-                          decimalsForConversion={18}
-                          symbol="GMX"
-                          entries={stakedEntries}
-                        />
-                      )}
-                    />
-                  )}
-                </div>
-              </div>
-              <div className="App-card-row">
-                <div className="label">
-                  <Trans>Total Supply</Trans>
-                </div>
-                {!totalGmxSupply && "..."}
-                {totalGmxSupply && (
-                  <div>
-                    {formatAmount(totalGmxSupply, 18, 0, true)} GMX ($
-                    {formatAmount(totalSupplyUsd, USD_DECIMALS, 0, true)})
-                  </div>
-                )}
-              </div>
-              <div className="App-card-divider" />
-              <div className="App-card-buttons m-0">
-                <Button variant="secondary" to="/buy_gmx">
-                  <Trans>Buy GMX</Trans>
-                </Button>
-                {active && (
-                  <Button variant="secondary" onClick={() => showStakeGmxModal()}>
-                    <Trans>Stake</Trans>
-                  </Button>
-                )}
-                {active && (
-                  <Button variant="secondary" onClick={() => showUnstakeGmxModal()}>
-                    <Trans>Unstake</Trans>
-                  </Button>
-                )}
-                {active && (
-                  <Button variant="secondary" to="/begin_account_transfer">
-                    <Trans>Transfer Account</Trans>
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="App-card primary StakeV2-total-rewards-card">
-            <div className="App-card-title">
-              <Trans>Total Rewards</Trans>
-            </div>
-            <div className="App-card-divider"></div>
-            <div className="App-card-content">
-              <div className="App-card-row">
-                <div className="label">
-                  {nativeTokenSymbol} ({wrappedTokenSymbol})
-                </div>
-                <div>
-                  {formatKeyAmount(processedData, "totalNativeTokenRewards", 18, 4, true)} ($
-                  {formatKeyAmount(processedData, "totalNativeTokenRewardsUsd", USD_DECIMALS, 2, true)})
-                </div>
-              </div>
-              <div className="App-card-row">
-                <div className="label">GMX</div>
-                <div>
-                  {formatKeyAmount(processedData, "totalVesterRewards", 18, 4, true)} ($
-                  {formatKeyAmount(processedData, "totalVesterRewardsUsd", USD_DECIMALS, 2, true)})
-                </div>
-              </div>
-              <div className="App-card-row">
-                <div className="label">
-                  <Trans>Escrowed GMX</Trans>
-                </div>
-                <div>
-                  {formatKeyAmount(processedData, "totalEsGmxRewards", 18, 4, true)} ($
-                  {formatKeyAmount(processedData, "totalEsGmxRewardsUsd", USD_DECIMALS, 2, true)})
-                </div>
-              </div>
-              <div className="App-card-row">
-                <div className="label">
-                  <Trans>Multiplier Points</Trans>
-                </div>
-                <div>{formatAmount(accumulatedBnGMXAmount, 18, 4, true)}</div>
-              </div>
-              <div className="App-card-row">
-                <div className="label">
-                  <Trans>Staked Multiplier Points</Trans>
-                </div>
-                <div>{formatKeyAmount(processedData, "bnGmxInFeeGmx", 18, 4, true)}</div>
-              </div>
-              <div className="App-card-row">
-                <div className="label">
-                  <Trans>Total</Trans>
-                </div>
-                <div>${formatKeyAmount(processedData, "totalRewardsUsd", USD_DECIMALS, 2, true)}</div>
-              </div>
-              <div className="App-card-footer">
-                <div className="App-card-divider"></div>
-                <div className="App-card-buttons m-0">
-                  {active && (
-                    <Button variant="secondary" onClick={() => setIsCompoundModalVisible(true)}>
-                      <Trans>Compound</Trans>
-                    </Button>
-                  )}
-                  {active && (
-                    <Button variant="secondary" onClick={() => setIsClaimModalVisible(true)}>
-                      <Trans>Claim</Trans>
-                    </Button>
-                  )}
-                  {!active && (
-                    <Button variant="secondary" onClick={openConnectModal}>
-                      <Trans>Connect Wallet</Trans>
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="App-card App-card-space-between">
+      <div className="box-padding">
+        <PageTitle
+          isTop
+          title={t`Earn`}
+          subtitle={
             <div>
+              <Trans>
+              Earn reward from trading fees and liquidity mining
+              </Trans>
+              {earnMsg && <div className="Page-description">{earnMsg}</div>}
+              {/* {(incentiveStats?.lp?.isActive || incentiveStats?.trading?.isActive) && (
+                <div>
+                  <Trans>
+                    Liquidity and trading incentives program is live on Arbitrum.{" "}
+                    <ExternalLink
+                      newTab
+                      href="https://gmxio.notion.site/GMX-S-T-I-P-Incentives-Distribution-1a5ab9ca432b4f1798ff8810ce51fec3"
+                    >
+                      Read more
+                    </ExternalLink>
+                    .
+                  </Trans>
+                </div>
+              )} */}
+            </div>
+          }
+        />
+        {/* <div className="StakeV2-content">
+          <div className="StakeV2-cards">
+            <div className="App-card StakeV2-gmx-card">
               <div className="App-card-title">
                 <div className="inline-items-center">
-                  <img className="mr-xs" alt="GLP" src={icons.glp} height={20} />
-                  GLP
+                  <img className="mr-xs" alt="GMX" src={icons.gmx} height={20} />
+                  GMX
                 </div>
               </div>
               <div className="App-card-divider"></div>
@@ -2098,15 +1880,36 @@ export default function StakeV2() {
                   <div className="label">
                     <Trans>Price</Trans>
                   </div>
-                  <div>${formatKeyAmount(processedData, "glpPrice", USD_DECIMALS, 3, true)}</div>
+                  <div>
+                    {!gmxPrice && "..."}
+                    {gmxPrice && (
+                      <Tooltip
+                        position="bottom-end"
+                        className="nowrap"
+                        handle={"$" + formatAmount(gmxPrice, USD_DECIMALS, 2, true)}
+                        renderContent={() => (
+                          <>
+                            <StatsTooltipRow
+                              label={t`Price on Avalanche`}
+                              value={formatAmount(gmxPriceFromAvalanche, USD_DECIMALS, 2, true)}
+                            />
+                            <StatsTooltipRow
+                              label={t`Price on Arbitrum`}
+                              value={formatAmount(gmxPriceFromArbitrum, USD_DECIMALS, 2, true)}
+                            />
+                          </>
+                        )}
+                      />
+                    )}
+                  </div>
                 </div>
                 <div className="App-card-row">
                   <div className="label">
                     <Trans>Wallet</Trans>
                   </div>
                   <div>
-                    {formatKeyAmount(processedData, "glpBalance", GLP_DECIMALS, 2, true)} GLP ($
-                    {formatKeyAmount(processedData, "glpBalanceUsd", USD_DECIMALS, 2, true)})
+                    {formatKeyAmount(processedData, "gmxBalance", 18, 2, true)} GMX ($
+                    {formatKeyAmount(processedData, "gmxBalanceUsd", USD_DECIMALS, 2, true)})
                   </div>
                 </div>
                 <div className="App-card-row">
@@ -2114,61 +1917,53 @@ export default function StakeV2() {
                     <Trans>Staked</Trans>
                   </div>
                   <div>
-                    {formatKeyAmount(processedData, "glpBalance", GLP_DECIMALS, 2, true)} GLP ($
-                    {formatKeyAmount(processedData, "glpBalanceUsd", USD_DECIMALS, 2, true)})
+                    {formatKeyAmount(processedData, "gmxInStakedGmx", 18, 2, true)} GMX ($
+                    {formatKeyAmount(processedData, "gmxInStakedGmxUsd", USD_DECIMALS, 2, true)})
                   </div>
                 </div>
                 <div className="App-card-divider"></div>
                 <div className="App-card-row">
                   <div className="label">
-                    <Trans>APR</Trans>
+                    <Trans>Avg. APR</Trans>
                   </div>
                   <div>
                     <Tooltip
-                      handle={`${formatKeyAmount(processedData, "glpAprTotal", 2, 2, true)}%`}
+                      handle={gmxAvgAprText}
                       position="bottom-end"
-                      renderContent={() => {
-                        return (
-                          <>
-                            <StatsTooltipRow
-                              label={`${nativeTokenSymbol} (${wrappedTokenSymbol}) APR`}
-                              value={`${formatKeyAmount(processedData, "glpAprForNativeToken", 2, 2, true)}%`}
-                              showDollar={false}
-                            />
-
-                            {processedData?.glpAprForEsGmx?.gt(0) && (
-                              <StatsTooltipRow
-                                label="Escrowed GMX APR"
-                                value={`${formatKeyAmount(processedData, "glpAprForEsGmx", 2, 2, true)}%`}
-                                showDollar={false}
-                              />
-                            )}
-
-                            <br />
-
-                            <Trans>
-                              APRs are updated weekly on Wednesday and will depend on the fees collected for the week.{" "}
-                              <br />
-                              <br />
-                              Historical GLP APRs can be checked in this{" "}
-                              <ExternalLink href="https://dune.com/saulius/gmx-analytics">
-                                community dashboard
-                              </ExternalLink>
-                              .
-                            </Trans>
-                          </>
-                        );
-                      }}
+                      renderContent={() => (
+                        <GMXAprTooltip processedData={processedData!} nativeTokenSymbol={nativeTokenSymbol} />
+                      )}
                     />
                   </div>
                 </div>
+                {active && (
+                  <div className="App-card-row">
+                    <div className="label">
+                      <Trans>Your APR</Trans>
+                    </div>
+                    <div>
+                      <Tooltip
+                        handle={`${formatKeyAmount(processedData, "gmxAprTotalWithBoost", 2, 2, true)}%`}
+                        position="bottom-end"
+                        renderContent={() => (
+                          <GMXAprTooltip
+                            processedData={processedData!}
+                            nativeTokenSymbol={nativeTokenSymbol}
+                            recommendStakeGmx={recommendStakeGmx}
+                            isUserConnected={true}
+                          />
+                        )}
+                      />
+                    </div>
+                  </div>
+                )}
                 <div className="App-card-row">
                   <div className="label">
                     <Trans>Rewards</Trans>
                   </div>
                   <div>
                     <Tooltip
-                      handle={`$${formatKeyAmount(processedData, "totalGlpRewardsUsd", USD_DECIMALS, 2, true)}`}
+                      handle={`$${formatKeyAmount(processedData, "totalGmxRewardsUsd", USD_DECIMALS, 2, true)}`}
                       position="bottom-end"
                       renderContent={() => {
                         return (
@@ -2177,28 +1972,22 @@ export default function StakeV2() {
                               label={`${nativeTokenSymbol} (${wrappedTokenSymbol})`}
                               value={`${formatKeyAmount(
                                 processedData,
-                                "feeGlpTrackerRewards",
+                                "feeGmxTrackerRewards",
                                 18,
                                 4
-                              )} ($${formatKeyAmount(
-                                processedData,
-                                "feeGlpTrackerRewardsUsd",
-                                USD_DECIMALS,
-                                2,
-                                true
-                              )})`}
+                              )} ($${formatKeyAmount(processedData, "feeGmxTrackerRewardsUsd", USD_DECIMALS, 2, true)})`}
                               showDollar={false}
                             />
                             <StatsTooltipRow
                               label="Escrowed GMX"
                               value={`${formatKeyAmount(
                                 processedData,
-                                "stakedGlpTrackerRewards",
+                                "stakedGmxTrackerRewards",
                                 18,
                                 4
                               )} ($${formatKeyAmount(
                                 processedData,
-                                "stakedGlpTrackerRewardsUsd",
+                                "stakedGmxTrackerRewardsUsd",
                                 USD_DECIMALS,
                                 2,
                                 true
@@ -2211,14 +2000,409 @@ export default function StakeV2() {
                     />
                   </div>
                 </div>
-                <div className="App-card-divider" />
+                <div className="App-card-row">
+                  <div className="label">{renderMultiplierPointsLabel()}</div>
+                  <div>{renderMultiplierPointsValue()}</div>
+                </div>
+                <div className="App-card-row">
+                  <div className="label">
+                    <Trans>Boost Percentage</Trans>
+                  </div>
+                  <div>
+                    <Tooltip
+                      handle={`${formatAmount(processedData?.boostBasisPoints, 2, 2, false)}%`}
+                      position="bottom-end"
+                      renderContent={renderBoostPercentageTooltip}
+                    />
+                  </div>
+                </div>
+                <div className="App-card-divider"></div>
                 <div className="App-card-row">
                   <div className="label">
                     <Trans>Total Staked</Trans>
                   </div>
                   <div>
-                    {formatKeyAmount(processedData, "glpSupply", 18, 2, true)} GLP ($
-                    {formatKeyAmount(processedData, "glpSupplyUsd", USD_DECIMALS, 2, true)})
+                    {!totalGmxStaked && "..."}
+                    {totalGmxStaked && (
+                      <Tooltip
+                        position="bottom-end"
+                        className="nowrap"
+                        handle={
+                          formatAmount(totalGmxStaked, 18, 0, true) +
+                          " GMX" +
+                          ` ($${formatAmount(stakedGmxSupplyUsd, USD_DECIMALS, 0, true)})`
+                        }
+                        renderContent={() => (
+                          <ChainsStatsTooltipRow
+                            showDollar={false}
+                            decimalsForConversion={18}
+                            symbol="GMX"
+                            entries={stakedEntries}
+                          />
+                        )}
+                      />
+                    )}
+                  </div>
+                </div>
+                <div className="App-card-row">
+                  <div className="label">
+                    <Trans>Total Supply</Trans>
+                  </div>
+                  {!totalGmxSupply && "..."}
+                  {totalGmxSupply && (
+                    <div>
+                      {formatAmount(totalGmxSupply, 18, 0, true)} GMX ($
+                      {formatAmount(totalSupplyUsd, USD_DECIMALS, 0, true)})
+                    </div>
+                  )}
+                </div>
+                <div className="App-card-divider" />
+                <div className="App-card-buttons m-0">
+                  <Button variant="secondary" to="/buy_gmx">
+                    <Trans>Buy GMX</Trans>
+                  </Button>
+                  {active && (
+                    <Button variant="secondary" onClick={() => showStakeGmxModal()}>
+                      <Trans>Stake</Trans>
+                    </Button>
+                  )}
+                  {active && (
+                    <Button variant="secondary" onClick={() => showUnstakeGmxModal()}>
+                      <Trans>Unstake</Trans>
+                    </Button>
+                  )}
+                  {active && (
+                    <Button variant="secondary" to="/begin_account_transfer">
+                      <Trans>Transfer Account</Trans>
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="App-card primary StakeV2-total-rewards-card">
+              <div className="App-card-title">
+                <Trans>Total Rewards</Trans>
+              </div>
+              <div className="App-card-divider"></div>
+              <div className="App-card-content">
+                <div className="App-card-row">
+                  <div className="label">
+                    {nativeTokenSymbol} ({wrappedTokenSymbol})
+                  </div>
+                  <div>
+                    {formatKeyAmount(processedData, "totalNativeTokenRewards", 18, 4, true)} ($
+                    {formatKeyAmount(processedData, "totalNativeTokenRewardsUsd", USD_DECIMALS, 2, true)})
+                  </div>
+                </div>
+                <div className="App-card-row">
+                  <div className="label">GMX</div>
+                  <div>
+                    {formatKeyAmount(processedData, "totalVesterRewards", 18, 4, true)} ($
+                    {formatKeyAmount(processedData, "totalVesterRewardsUsd", USD_DECIMALS, 2, true)})
+                  </div>
+                </div>
+                <div className="App-card-row">
+                  <div className="label">
+                    <Trans>Escrowed GMX</Trans>
+                  </div>
+                  <div>
+                    {formatKeyAmount(processedData, "totalEsGmxRewards", 18, 4, true)} ($
+                    {formatKeyAmount(processedData, "totalEsGmxRewardsUsd", USD_DECIMALS, 2, true)})
+                  </div>
+                </div>
+                <div className="App-card-row">
+                  <div className="label">
+                    <Trans>Multiplier Points</Trans>
+                  </div>
+                  <div>{formatAmount(accumulatedBnGMXAmount, 18, 4, true)}</div>
+                </div>
+                <div className="App-card-row">
+                  <div className="label">
+                    <Trans>Staked Multiplier Points</Trans>
+                  </div>
+                  <div>{formatKeyAmount(processedData, "bnGmxInFeeGmx", 18, 4, true)}</div>
+                </div>
+                <div className="App-card-row">
+                  <div className="label">
+                    <Trans>Total</Trans>
+                  </div>
+                  <div>${formatKeyAmount(processedData, "totalRewardsUsd", USD_DECIMALS, 2, true)}</div>
+                </div>
+                <div className="App-card-footer">
+                  <div className="App-card-divider"></div>
+                  <div className="App-card-buttons m-0">
+                    {active && (
+                      <Button variant="secondary" onClick={() => setIsCompoundModalVisible(true)}>
+                        <Trans>Compound</Trans>
+                      </Button>
+                    )}
+                    {active && (
+                      <Button variant="secondary" onClick={() => setIsClaimModalVisible(true)}>
+                        <Trans>Claim</Trans>
+                      </Button>
+                    )}
+                    {!active && (
+                      <Button variant="secondary" onClick={openConnectModal}>
+                        <Trans>Connect Wallet</Trans>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="App-card App-card-space-between">
+              <div>
+                <div className="App-card-title">
+                  <div className="inline-items-center">
+                    <img className="mr-xs" alt="GLP" src={icons.glp} height={20} />
+                    GLP
+                  </div>
+                </div>
+                <div className="App-card-divider"></div>
+                <div className="App-card-content">
+                  <div className="App-card-row">
+                    <div className="label">
+                      <Trans>Price</Trans>
+                    </div>
+                    <div>${formatKeyAmount(processedData, "glpPrice", USD_DECIMALS, 3, true)}</div>
+                  </div>
+                  <div className="App-card-row">
+                    <div className="label">
+                      <Trans>Wallet</Trans>
+                    </div>
+                    <div>
+                      {formatKeyAmount(processedData, "glpBalance", GLP_DECIMALS, 2, true)} GLP ($
+                      {formatKeyAmount(processedData, "glpBalanceUsd", USD_DECIMALS, 2, true)})
+                    </div>
+                  </div>
+                  <div className="App-card-row">
+                    <div className="label">
+                      <Trans>Staked</Trans>
+                    </div>
+                    <div>
+                      {formatKeyAmount(processedData, "glpBalance", GLP_DECIMALS, 2, true)} GLP ($
+                      {formatKeyAmount(processedData, "glpBalanceUsd", USD_DECIMALS, 2, true)})
+                    </div>
+                  </div>
+                  <div className="App-card-divider"></div>
+                  <div className="App-card-row">
+                    <div className="label">
+                      <Trans>APR</Trans>
+                    </div>
+                    <div>
+                      <Tooltip
+                        handle={`${formatKeyAmount(processedData, "glpAprTotal", 2, 2, true)}%`}
+                        position="bottom-end"
+                        renderContent={() => {
+                          return (
+                            <>
+                              <StatsTooltipRow
+                                label={`${nativeTokenSymbol} (${wrappedTokenSymbol}) APR`}
+                                value={`${formatKeyAmount(processedData, "glpAprForNativeToken", 2, 2, true)}%`}
+                                showDollar={false}
+                              />
+
+                              {processedData?.glpAprForEsGmx?.gt(0) && (
+                                <StatsTooltipRow
+                                  label="Escrowed GMX APR"
+                                  value={`${formatKeyAmount(processedData, "glpAprForEsGmx", 2, 2, true)}%`}
+                                  showDollar={false}
+                                />
+                              )}
+
+                              <br />
+
+                              <Trans>
+                                APRs are updated weekly on Wednesday and will depend on the fees collected for the week.{" "}
+                                <br />
+                                <br />
+                                Historical GLP APRs can be checked in this{" "}
+                                <ExternalLink href="https://dune.com/saulius/gmx-analytics">
+                                  community dashboard
+                                </ExternalLink>
+                                .
+                              </Trans>
+                            </>
+                          );
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="App-card-row">
+                    <div className="label">
+                      <Trans>Rewards</Trans>
+                    </div>
+                    <div>
+                      <Tooltip
+                        handle={`$${formatKeyAmount(processedData, "totalGlpRewardsUsd", USD_DECIMALS, 2, true)}`}
+                        position="bottom-end"
+                        renderContent={() => {
+                          return (
+                            <>
+                              <StatsTooltipRow
+                                label={`${nativeTokenSymbol} (${wrappedTokenSymbol})`}
+                                value={`${formatKeyAmount(
+                                  processedData,
+                                  "feeGlpTrackerRewards",
+                                  18,
+                                  4
+                                )} ($${formatKeyAmount(
+                                  processedData,
+                                  "feeGlpTrackerRewardsUsd",
+                                  USD_DECIMALS,
+                                  2,
+                                  true
+                                )})`}
+                                showDollar={false}
+                              />
+                              <StatsTooltipRow
+                                label="Escrowed GMX"
+                                value={`${formatKeyAmount(
+                                  processedData,
+                                  "stakedGlpTrackerRewards",
+                                  18,
+                                  4
+                                )} ($${formatKeyAmount(
+                                  processedData,
+                                  "stakedGlpTrackerRewardsUsd",
+                                  USD_DECIMALS,
+                                  2,
+                                  true
+                                )})`}
+                                showDollar={false}
+                              />
+                            </>
+                          );
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="App-card-divider" />
+                  <div className="App-card-row">
+                    <div className="label">
+                      <Trans>Total Staked</Trans>
+                    </div>
+                    <div>
+                      {formatKeyAmount(processedData, "glpSupply", 18, 2, true)} GLP ($
+                      {formatKeyAmount(processedData, "glpSupplyUsd", USD_DECIMALS, 2, true)})
+                    </div>
+                  </div>
+                  <div className="App-card-row">
+                    <div className="label">
+                      <Trans>Total Supply</Trans>
+                    </div>
+                    <div>
+                      {formatKeyAmount(processedData, "glpSupply", 18, 2, true)} GLP ($
+                      {formatKeyAmount(processedData, "glpSupplyUsd", USD_DECIMALS, 2, true)})
+                    </div>
+                  </div>
+
+                  <div />
+                </div>
+              </div>
+              <div>
+                <div className="App-card-divider" />
+                <div className="App-card-buttons glp-buttons m-0">
+                  <Button variant="secondary" to="/buy_glp">
+                    <Trans>Buy GLP</Trans>
+                  </Button>
+                  <Button variant="secondary" to="/buy_glp#redeem">
+                    <Trans>Sell GLP</Trans>
+                  </Button>
+                  {hasInsurance && (
+                    <Button
+                      variant="secondary"
+                      to="https://app.insurace.io/Insurance/Cart?id=124&referrer=545066382753150189457177837072918687520318754040"
+                    >
+                      <Trans>Purchase Insurance</Trans>
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="App-card">
+              <div className="App-card-title">
+                <div className="inline-items-center">
+                  <img className="mr-xs" alt="GLP" src={icons.esgmx} height={20} />
+                  <span>
+                    <Trans>Escrowed GMX</Trans>
+                  </span>
+                </div>
+              </div>
+              <div className="App-card-divider"></div>
+              <div className="App-card-content">
+                <div className="App-card-row">
+                  <div className="label">
+                    <Trans>Price</Trans>
+                  </div>
+                  <div>${formatAmount(gmxPrice, USD_DECIMALS, 2, true)}</div>
+                </div>
+                <div className="App-card-row">
+                  <div className="label">
+                    <Trans>Wallet</Trans>
+                  </div>
+                  <div>
+                    {formatKeyAmount(processedData, "esGmxBalance", 18, 2, true)} esGMX ($
+                    {formatKeyAmount(processedData, "esGmxBalanceUsd", USD_DECIMALS, 2, true)})
+                  </div>
+                </div>
+                <div className="App-card-row">
+                  <div className="label">
+                    <Trans>Staked</Trans>
+                  </div>
+                  <div>
+                    {formatKeyAmount(processedData, "esGmxInStakedGmx", 18, 2, true)} esGMX ($
+                    {formatKeyAmount(processedData, "esGmxInStakedGmxUsd", USD_DECIMALS, 2, true)})
+                  </div>
+                </div>
+                <div className="App-card-divider"></div>
+                <div className="App-card-row">
+                  <div className="label">
+                    <Trans>Avg. APR</Trans>
+                  </div>
+                  <div>
+                    <Tooltip
+                      handle={gmxAvgAprText}
+                      position="bottom-end"
+                      renderContent={() => (
+                        <GMXAprTooltip processedData={processedData!} nativeTokenSymbol={nativeTokenSymbol} />
+                      )}
+                    />
+                  </div>
+                </div>
+                {active && (
+                  <div className="App-card-row">
+                    <div className="label">
+                      <Trans>Your APR</Trans>
+                    </div>
+                    <div>
+                      <Tooltip
+                        handle={`${formatKeyAmount(processedData, "gmxAprTotalWithBoost", 2, 2, true)}%`}
+                        position="bottom-end"
+                        renderContent={() => (
+                          <GMXAprTooltip
+                            processedData={processedData!}
+                            nativeTokenSymbol={nativeTokenSymbol}
+                            recommendStakeGmx={recommendStakeGmx}
+                            isUserConnected={true}
+                          />
+                        )}
+                      />
+                    </div>
+                  </div>
+                )}
+                <div className="App-card-row">
+                  <div className="label">{renderMultiplierPointsLabel()}</div>
+                  <div>{renderMultiplierPointsValue()}</div>
+                </div>
+                <div className="App-card-divider"></div>
+                <div className="App-card-row">
+                  <div className="label">
+                    <Trans>Total Staked</Trans>
+                  </div>
+                  <div>
+                    {formatKeyAmount(processedData, "stakedEsGmxSupply", 18, 0, true)} esGMX ($
+                    {formatKeyAmount(processedData, "stakedEsGmxSupplyUsd", USD_DECIMALS, 0, true)})
                   </div>
                 </div>
                 <div className="App-card-row">
@@ -2226,237 +2410,120 @@ export default function StakeV2() {
                     <Trans>Total Supply</Trans>
                   </div>
                   <div>
-                    {formatKeyAmount(processedData, "glpSupply", 18, 2, true)} GLP ($
-                    {formatKeyAmount(processedData, "glpSupplyUsd", USD_DECIMALS, 2, true)})
+                    {formatAmount(esGmxSupply, 18, 0, true)} esGMX (${formatAmount(esGmxSupplyUsd, USD_DECIMALS, 0, true)}
+                    )
                   </div>
                 </div>
+                <div className="App-card-divider"></div>
+                <div className="App-card-buttons m-0">
+                  {active && (
+                    <Button variant="secondary" onClick={() => showStakeEsGmxModal()}>
+                      <Trans>Stake</Trans>
+                    </Button>
+                  )}
+                  {active && (
+                    <Button variant="secondary" onClick={() => showUnstakeEsGmxModal()}>
+                      <Trans>Unstake</Trans>
+                    </Button>
+                  )}
+                  {!active && (
+                    <Button variant="secondary" onClick={openConnectModal}>
+                      <Trans> Connect Wallet</Trans>
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div> */}
+        <div className="App-card App-card-space-between StakeV2-content">
+          <div className="StakeV2-title">AGX Statistics</div>
+          <div className="StakeV2-box">
+            <div className="StakeV2-totalBox">
+              <div className="StakeV2-tit">Total Emissions</div>
+              <div>{formatAmount(totalEmissions, 18, 2, true)}</div>
+            </div>
+            <div className="StakeV2-totalBox">
+              <div className="StakeV2-tit">Total Claimed</div>
+              <div>{formatAmount(totalClaimed, 18, 2, true)}</div>
+            </div>
+            <div className="StakeV2-totalBox">
+              <div className="StakeV2-tit">Current Emisions</div>
+              <div>{formatAmount(perinter, 18, 2, true)}</div>
+            </div>
+            <Button variant="secondary" to="/buy" className="StakeV2-button">
+              <Trans>Buy</Trans>
+            </Button>
+          </div>
+        </div>
 
-                <div />
-              </div>
+        <div className="App-card App-card-space-between StakeV2-content">
+          <div className="StakeV2-title">Claimable Rewards</div>
+          <div className="StakeV2-box">
+            <div className="StakeV2-claimBox">
+              <div className="StakeV2-claimNum">0.00</div>
+              <div className="StakeV2-claimToken">USDT</div>
             </div>
-            <div>
-              <div className="App-card-divider" />
-              <div className="App-card-buttons glp-buttons m-0">
-                <Button variant="secondary" to="/buy_glp">
-                  <Trans>Buy GLP</Trans>
-                </Button>
-                <Button variant="secondary" to="/buy_glp#redeem">
-                  <Trans>Sell GLP</Trans>
-                </Button>
-                {hasInsurance && (
-                  <Button
-                    variant="secondary"
-                    to="https://app.insurace.io/Insurance/Cart?id=124&referrer=545066382753150189457177837072918687520318754040"
-                  >
-                    <Trans>Purchase Insurance</Trans>
-                  </Button>
-                )}
-              </div>
+            <div className="StakeV2-claimBox">
+              <div className="StakeV2-claimNum">{formatAmount(rewards, 18, 2, true)}</div>
+              <div className="StakeV2-claimToken">AGX</div>
             </div>
-          </div>
-          <div className="App-card">
-            <div className="App-card-title">
-              <div className="inline-items-center">
-                <img className="mr-xs" alt="GLP" src={icons.esgmx} height={20} />
-                <span>
-                  <Trans>Escrowed GMX</Trans>
-                </span>
-              </div>
-            </div>
-            <div className="App-card-divider"></div>
-            <div className="App-card-content">
-              <div className="App-card-row">
-                <div className="label">
-                  <Trans>Price</Trans>
-                </div>
-                <div>${formatAmount(gmxPrice, USD_DECIMALS, 2, true)}</div>
-              </div>
-              <div className="App-card-row">
-                <div className="label">
-                  <Trans>Wallet</Trans>
-                </div>
-                <div>
-                  {formatKeyAmount(processedData, "esGmxBalance", 18, 2, true)} esGMX ($
-                  {formatKeyAmount(processedData, "esGmxBalanceUsd", USD_DECIMALS, 2, true)})
-                </div>
-              </div>
-              <div className="App-card-row">
-                <div className="label">
-                  <Trans>Staked</Trans>
-                </div>
-                <div>
-                  {formatKeyAmount(processedData, "esGmxInStakedGmx", 18, 2, true)} esGMX ($
-                  {formatKeyAmount(processedData, "esGmxInStakedGmxUsd", USD_DECIMALS, 2, true)})
-                </div>
-              </div>
-              <div className="App-card-divider"></div>
-              <div className="App-card-row">
-                <div className="label">
-                  <Trans>Avg. APR</Trans>
-                </div>
-                <div>
-                  <Tooltip
-                    handle={gmxAvgAprText}
-                    position="bottom-end"
-                    renderContent={() => (
-                      <GMXAprTooltip processedData={processedData!} nativeTokenSymbol={nativeTokenSymbol} />
-                    )}
-                  />
-                </div>
-              </div>
-              {active && (
-                <div className="App-card-row">
-                  <div className="label">
-                    <Trans>Your APR</Trans>
-                  </div>
-                  <div>
-                    <Tooltip
-                      handle={`${formatKeyAmount(processedData, "gmxAprTotalWithBoost", 2, 2, true)}%`}
-                      position="bottom-end"
-                      renderContent={() => (
-                        <GMXAprTooltip
-                          processedData={processedData!}
-                          nativeTokenSymbol={nativeTokenSymbol}
-                          recommendStakeGmx={recommendStakeGmx}
-                          isUserConnected={true}
-                        />
-                      )}
-                    />
-                  </div>
-                </div>
-              )}
-              <div className="App-card-row">
-                <div className="label">{renderMultiplierPointsLabel()}</div>
-                <div>{renderMultiplierPointsValue()}</div>
-              </div>
-              <div className="App-card-divider"></div>
-              <div className="App-card-row">
-                <div className="label">
-                  <Trans>Total Staked</Trans>
-                </div>
-                <div>
-                  {formatKeyAmount(processedData, "stakedEsGmxSupply", 18, 0, true)} esGMX ($
-                  {formatKeyAmount(processedData, "stakedEsGmxSupplyUsd", USD_DECIMALS, 0, true)})
-                </div>
-              </div>
-              <div className="App-card-row">
-                <div className="label">
-                  <Trans>Total Supply</Trans>
-                </div>
-                <div>
-                  {formatAmount(esGmxSupply, 18, 0, true)} esGMX (${formatAmount(esGmxSupplyUsd, USD_DECIMALS, 0, true)}
-                  )
-                </div>
-              </div>
-              <div className="App-card-divider"></div>
-              <div className="App-card-buttons m-0">
-                {active && (
-                  <Button variant="secondary" onClick={() => showStakeEsGmxModal()}>
-                    <Trans>Stake</Trans>
-                  </Button>
-                )}
-                {active && (
-                  <Button variant="secondary" onClick={() => showUnstakeEsGmxModal()}>
-                    <Trans>Unstake</Trans>
-                  </Button>
-                )}
-                {!active && (
-                  <Button variant="secondary" onClick={openConnectModal}>
-                    <Trans> Connect Wallet</Trans>
-                  </Button>
-                )}
-              </div>
-            </div>
+            <Button variant="secondary" className="StakeV2-button" onClick={onClickPrimary} disabled={!isPrimaryEnabled()}>
+              {getPrimaryText()}
+            </Button>
           </div>
         </div>
-      </div> */}
-      <div className="App-card App-card-space-between StakeV2-content">
-        <div className="StakeV2-title">FOM Statistics</div>
-        <div className="StakeV2-box">
-          <div className="StakeV2-totalBox">
-            <div className="StakeV2-tit">Total Emissions</div>
-            <div>1,333,213</div>
-          </div>
-          <div className="StakeV2-totalBox">
-            <div className="StakeV2-tit">Total Claimed</div>
-            <div>1,333,213</div>
-          </div>
-          <div className="StakeV2-totalBox">
-            <div className="StakeV2-tit">Current Emisions</div>
-            <div>1,333,213</div>
-          </div>
-          <Button variant="secondary" to="/buy_glp" className="StakeV2-button">
-            <Trans>Buy</Trans>
-          </Button>
-        </div>
-      </div>
 
-      <div className="App-card App-card-space-between StakeV2-content">
-        <div className="StakeV2-title">Claimable Rewards</div>
-        <div className="StakeV2-box">
-          <div className="StakeV2-claimBox">
-            <div className="StakeV2-claimNum">0.00</div>
-            <div className="StakeV2-claimToken">USDT</div>
-          </div>
-          <div className="StakeV2-claimBox">
-            <div className="StakeV2-claimNum">0.00</div>
-            <div className="StakeV2-claimToken">FOM</div>
-          </div>
-          <Button variant="secondary" to="/buy_glp" className="StakeV2-button">
-            <Trans>Claim All</Trans>
-          </Button>
-        </div>
-      </div>
-
-      <div className="App-card App-card-space-between StakeV2-content">
-        <div className="StakeV2-title">FOM Statistics</div>
-        <div className="StakeV2-box">
-          <div className="StakeV2-fomBox">
-            <div className="StakeV2-tit">APR</div>
-            <div>1,333,213</div>
-          </div>
-          <div className="StakeV2-fomBox">
-            <div className="StakeV2-tit">Stake APR</div>
-            <div>1,333,213</div>
-          </div>
-          <div className="StakeV2-fomBox">
-            <div className="StakeV2-tit">Staked FOM</div>
-            <div>1,333,213</div>
-          </div>
-          <div className="StakeV2-fomBox">
-            <div className="StakeV2-tit">Total Staking Reward</div>
-            <div>1,333,213</div>
+        <div className="App-card App-card-space-between StakeV2-content">
+          <div className="StakeV2-title">AGX Statistics</div>
+          <div className="StakeV2-box">
+            <div className="StakeV2-fomBox">
+              <div className="StakeV2-tit">APR</div>
+              <div>1,333,213</div>
+            </div>
+            <div className="StakeV2-fomBox">
+              <div className="StakeV2-tit">Stake APR</div>
+              <div>0</div>
+            </div>
+            <div className="StakeV2-fomBox">
+              <div className="StakeV2-tit">Staked AGX</div>
+              <div>0</div>
+            </div>
+            <div className="StakeV2-fomBox">
+              <div className="StakeV2-tit">Total Staking Reward</div>
+              <div>0</div>
+            </div>
           </div>
         </div>
-      </div>
-      <div className="App-card App-card-space-between StakeV2-content">
-        <div className="StakeV2-title">My Data</div>
-        <div className="StakeV2-box">
-          <div className="StakeV2-fomBox">
-            <div className="StakeV2-tit">FOM</div>
-            <div>1,333,213</div>
-          </div>
-          <div className="StakeV2-fomBox">
-            <div className="StakeV2-tit">Staked FOM</div>
-            <div>1,333,213</div>
-          </div>
-          <div className="StakeV2-fomBox">
-            <div className="StakeV2-tit">Total Reward</div>
-            <div>1,333,213</div>
-          </div>
-          <div className="StakeV2-fomBox">
-            <div className="StakeV2-tit">Claimable Rewards</div>
-            <div>1,333,213</div>
+        <div className="App-card App-card-space-between StakeV2-content">
+          <div className="StakeV2-title">My Data</div>
+          <div className="StakeV2-box">
+            <div className="StakeV2-fomBox">
+              <div className="StakeV2-tit">AGX</div>
+              <div>{formatAmount(AGXBalance, 18, 2, true)}</div>
+            </div>
+            <div className="StakeV2-fomBox">
+              <div className="StakeV2-tit">Staked AGX</div>
+              <div>0</div>
+            </div>
+            <div className="StakeV2-fomBox">
+              <div className="StakeV2-tit">Total Reward</div>
+              <div>0</div>
+            </div>
+            <div className="StakeV2-fomBox">
+              <div className="StakeV2-tit">Claimable Rewards</div>
+              <div>0</div>
+            </div>
           </div>
         </div>
-      </div>
-      
-      <div className="App-card App-card-space-between StakeV2-content">
-        <div className="StakeV2-box">
-          <div className="StakeV2-stakeTitle">Stake FOM</div>
-          <Button variant="secondary" className="StakeV2-stakeButton"  onClick={() => showStakeGmxModals()}>
-            <Trans>Stake FOM</Trans>
-          </Button>
+        
+        <div className="App-card App-card-space-between StakeV2-content">
+          <div className="StakeV2-box">
+            <div className="StakeV2-stakeTitle">Stake AGX</div>
+            <Button variant="secondary" className="StakeV2-stakeButton"  onClick={() => showStakeGmxModals()}>
+              <Trans>Stake AGX</Trans>
+            </Button>
+          </div>
         </div>
       </div>
       {/* {getIsSyntheticsSupported(chainId) && (
